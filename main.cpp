@@ -5,11 +5,11 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <filesystem>
-#include "Scanner.h"
+
 #include <vector>
 #include <any>
-#include "Types.h"
-#include "Environment.h"
+
+#include "Yisp.h"
 int main(int argc, char* argv[]) {
 
 
@@ -36,17 +36,9 @@ int main(int argc, char* argv[]) {
     }
   }
   else {
-      Scanner scanner;
-       scanner.Tokenize("(begin (define r 10) (* pi (* r r)))");
-       std::vector<std::any> tokens = scanner.readFromTokens(scanner.tokens_);
-
-       Environment env;
-       List l = List{};
-       l.push_back(List{5.0, 5.0});
-       auto test = env.Get("car", l);
-       auto val = std::any_cast<double>(test);
-         std::cout << "out" << std::endl;
+    Yisp yisp;
+    yisp.repl();
   }
 
   return 0;
-}
+} 

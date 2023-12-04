@@ -1,41 +1,73 @@
 #include "Environment.h"
 #include <unordered_map>
 #include "DefaultExpr.h"
+#include "Procedure.h"
+
 
 using namespace expr;
 
-std::any Environment::Get(Symbol name, List args)
+Expr Environment::getExpr(Symbol name)
 {
-  if (values_.find(name) != values_.end())
+  if (defaultExprs.find(name) != defaultExprs.end())
   {
-    return values_[name](args);
+    return defaultExprs.at(name);
   }
+
+  else if (exprValues.find(name) != exprValues.end())
+  {
+    return exprValues.at(name);
+  }
+  
   if (enclosing_ != nullptr)
   {
-    return enclosing_->Get(name, args);
+    return enclosing_->getExpr(name);
   }
+  
+  throw  "Undefined variable '" + name + "'.";
+}
+
+std::any Environment::getVar(Symbol name)
+{
+  if (variableValues.find(name) != variableValues.end())
+  {
+    return variableValues.at(name);
+  }
+  
+  if (enclosing_ != nullptr)
+  {
+    return enclosing_->getVar(name);
+  }
+  
   throw  "Undefined variable '" + name + "'.";
 }
 
 
+void Environment::define(Symbol name, std::any value)
+{
+  variableValues[name] = value;
+}
+
+void Environment::define(Symbol name, Expr func)
+{
+  exprValues[name] = func;
+}
+void Environment::defineProcedure(Symbol name, std::any args, std::any expr)
+{
+  Procedure* procedure = new Procedure(args, expr, this);
+
+  //procedures.push_back(procedure);
+
+  Expr boundFunction = std::bind(&Procedure::call, procedure, std::placeholders::_1);
+
+  define(name, boundFunction);
+}
+
 Environment::Environment()
 {
   enclosing_ = nullptr;
-  values_ = std::unordered_map<std::string, Expr>() = {
-    {"+",  Add},
-    {"-",  Sub},
-    {"*",  Mul},
-    {"/",  Div},
-    {">",  Gt},
-    {"<",  Lt},
-    {"<=", Lte},
-    {">=", Gte},
-    {"=",  Eq},
-    {"cons", Cons},
-    {"car", Car},
-    {"cdr", Cdr},
-    {"number?" , isNumber},
-    {"symbol?", isSymbol},
-    {"list?", isList}
-  };
+}
+
+Environment::Environment(Environment* enclosing)
+{
+  enclosing_ = enclosing;
 }

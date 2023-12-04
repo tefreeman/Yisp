@@ -1,9 +1,9 @@
+#pragma once
 #include "Environment.h"
 #include <unordered_map>
 #include "Types.h"
 
 namespace expr {
-
   std::any Add(List args)
   {
     double result = 0;
@@ -47,7 +47,6 @@ namespace expr {
   std::any Gt(List args)
   {
     double a = std::any_cast<double>(args[0]);
-    double b;
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
@@ -62,7 +61,6 @@ namespace expr {
   std::any Gte(List args)
   {
     double a = std::any_cast<double>(args[0]);
-    double b;
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
@@ -198,5 +196,21 @@ namespace expr {
     return args.size() >= 1;
   }
 
-
+  const inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
+    {"+",  Add},
+    {"-",  Sub},
+    {"*",  Mul},
+    {"/",  Div},
+    {">",  Gt},
+    {"<",  Lt},
+    {"<=", Lte},
+    {">=", Gte},
+    {"=",  Eq},
+    {"cons", Cons},
+    {"car", Car},
+    {"cdr", Cdr},
+    {"number?" , isNumber},
+    {"symbol?", isSymbol},
+    {"list?", isList}
+  };
 }

@@ -10,10 +10,13 @@ class Scanner
 {
 private:
 
-public:
-   std::deque<std::string> tokens_;
-   void Tokenize(std::string text);
+  std::any flattenList(std::any& element);
+  std::deque<std::string> Tokenize(std::string text);
+  List readMultipleExpressions(std::deque<std::string>& tokens);
+  std::any flattenSingleElementVectors(List& list);
+  List readFromTokens(std::deque<std::string>& tokens);
 
-   List readFromTokens(std::deque<std::string>& tokens);
+public:
+  List parse(std::string text);
 };
 

@@ -8,6 +8,30 @@
 
 using namespace types;
 
+
+std::any Scanner::flattenList(std::any& element) {
+  // If the element is a List, flatten it
+  if (element.type() == typeid(List)) {
+    return flattenSingleElementVectors(std::any_cast<List&>(element));
+  }
+  // Otherwise, return the element as is
+  return element;
+}
+
+std::any Scanner::flattenSingleElementVectors(List& list) {
+  for (auto& element : list) {
+    element = flattenList(element);
+  }
+
+  // If the list has only one element, return that element
+  if (list.size() == 1) {
+    return list[0];
+  }
+  // Otherwise, return the list
+  return list;
+}
+
+
 void replaceAll(std::string& str, const std::string& from, const std::string& to) {
   size_t start_pos = 0;
   while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
@@ -47,8 +71,11 @@ bool isInteger(const std::string& str) {
   return true; // is an integer
 }
 
-void Scanner::Tokenize(std::string text)
+std::deque<std::string> Scanner::Tokenize(std::string text)
 {
+
+  std::deque<std::string> tokens;
+
   replaceAll(text, "(", " ( ");
   replaceAll(text, ")", " ) ");
 
@@ -57,10 +84,19 @@ void Scanner::Tokenize(std::string text)
 
 
   while (getline(tokenStream, token, ' ')) {
-    tokens_.push_back(token);
+    tokens.push_back(token);
   }
 
-  removeEmpty(tokens_);
+  removeEmpty(tokens);
+
+  return tokens;
+}
+  List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
+  List expressions;
+  while (!tokens.empty()) {
+    expressions.push_back(readFromTokens(tokens));
+  }
+  return expressions;
 }
 
 List Scanner::readFromTokens(std::deque<std::string>& tokens)
@@ -69,13 +105,13 @@ List Scanner::readFromTokens(std::deque<std::string>& tokens)
     throw std::invalid_argument("Unexpected End of File");
   }
 
-  Symbol token = tokens_.front();
+  Symbol token = tokens.front();
   tokens.pop_front();
 
   if (token == "(") {
     List list;
     
-    while (tokens_.front() != ")") {
+    while (tokens.front() != ")") {
       list.push_back(readFromTokens(tokens));
     }
     tokens.pop_front();
@@ -99,4 +135,21 @@ List Scanner::readFromTokens(std::deque<std::string>& tokens)
   }
  
 }
+
+List Scanner::parse(std::string text)
+{
+  std::deque<std::string> tokens = Tokenize(text);
+  List list = readMultipleExpressions(tokens);
+  std::any flattendList = flattenSingleElementVectors(list);
+
+  List returnedList;
+
+
+  for (auto& element : std::any_cast<std::vector<std::any>>(flattendList)) {
+    returnedList.push_back(element);
+  }
+
+  return returnedList;
+}
+
 
