@@ -32,9 +32,7 @@ namespace commands {
 
 
   inline CmdTypes getType(Symbol str) {
-    
-    for (int i = 0; i < str.length(); i++)
-      str[i] = tolower(str[i]);
+  
 
     if(str == "define") return CmdTypes::DEFINE;
     if(str == "set") return CmdTypes::SET;

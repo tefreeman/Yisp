@@ -47,7 +47,7 @@ using namespace types;
   }
 
   void Yisp::repl() {
-    std::string prompt = "lis.py> ";
+    std::string prompt = "yisp> ";
     Scanner scanner;
     Environment env;
     std::string input;

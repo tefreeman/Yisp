@@ -6,51 +6,39 @@
 
 using namespace expr;
 
-Expr Environment::getExpr(Symbol name)
+
+
+
+std::any Environment::get(Symbol name)
 {
   if (defaultExprs.find(name) != defaultExprs.end())
   {
     return defaultExprs.at(name);
   }
 
-  else if (exprValues.find(name) != exprValues.end())
+  else if (localVars.find(name) != localVars.end())
   {
-    return exprValues.at(name);
+    return localVars.at(name);
   }
-  
+
   if (enclosing_ != nullptr)
   {
-    return enclosing_->getExpr(name);
+    return enclosing_->get(name);
   }
-  
-  throw  "Undefined variable '" + name + "'.";
-}
 
-std::any Environment::getVar(Symbol name)
-{
-  if (variableValues.find(name) != variableValues.end())
-  {
-    return variableValues.at(name);
-  }
-  
-  if (enclosing_ != nullptr)
-  {
-    return enclosing_->getVar(name);
-  }
-  
-  throw  "Undefined variable '" + name + "'.";
+  throw "Undefined variable " + name;
 }
-
 
 void Environment::define(Symbol name, std::any value)
 {
-  variableValues[name] = value;
+  localVars[name] = value;
 }
 
 void Environment::define(Symbol name, Expr func)
 {
-  exprValues[name] = func;
+  localVars[name] = func;
 }
+
 void Environment::defineProcedure(Symbol name, std::any args, std::any expr)
 {
   Procedure* procedure = new Procedure(args, expr, this);

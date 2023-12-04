@@ -71,8 +71,12 @@ bool isInteger(const std::string& str) {
   return true; // is an integer
 }
 
-std::deque<std::string> Scanner::Tokenize(std::string text)
+std::deque<std::string> Scanner::Tokenize(std::string& text)
 {
+  // All characters to lowercase
+
+  for (int i = 0; i < text.length(); i++)
+    text[i] = tolower(text[i]);
 
   std::deque<std::string> tokens;
 

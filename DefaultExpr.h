@@ -124,11 +124,13 @@ namespace expr {
       throw "invalid type given to EQ:";
   }
 
+
   std::any Cons(List args)
   {
     if (args.size() != 2) {
       throw "too many arguments given to CONS:";
     }
+
     List list = std::any_cast<List>(args[1]);
     list.insert(list.begin(), args[0]);
     return list;

@@ -9,15 +9,12 @@ using namespace types;
 class Environment
 {
 private:
-   std::unordered_map<std::string, std::any> variableValues;
-   std::unordered_map<std::string, Expr> exprValues;
+  std::unordered_map<std::string, std::any> localVars;
   Environment* enclosing_;
 
-
 public:
-  Expr getExpr(Symbol name); // function lookup
-  std::any getVar(Symbol name); // variable lookup
-
+  std::any get(Symbol name); // variable % function lookup)
+  
   void define(Symbol name, const std::any value);
   void define(Symbol name, const Expr);
 

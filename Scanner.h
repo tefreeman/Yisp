@@ -11,7 +11,7 @@ class Scanner
 private:
 
   std::any flattenList(std::any& element);
-  std::deque<std::string> Tokenize(std::string text);
+  std::deque<std::string> Tokenize(std::string& text);
   List readMultipleExpressions(std::deque<std::string>& tokens);
   std::any flattenSingleElementVectors(List& list);
   List readFromTokens(std::deque<std::string>& tokens);

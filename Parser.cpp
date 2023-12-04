@@ -12,6 +12,13 @@ inline bool isNil(const std::any& expr) {
   return expr.type() == typeid(List) && std::any_cast<List>(expr).empty();
 }
 
+// Has to be moved out of DefaultExpr to not execute list
+inline std::any evalQuote(const List& list) {
+  if (list.size() != 2) {
+    throw "quote takes exactly 1 argument";
+  }
+  return list[1]; // Return the quoted expression as is
+}
 inline std::any evalIfExpr(const List& list, Environment& env) {
   if (list.size() != 4) {
     throw std::runtime_error("if takes exactly 3 arguments");
@@ -24,10 +31,11 @@ inline std::any evalSetExpr(const List& list, Environment& env) {
   if (list.size() != 3) {
     throw std::runtime_error("set! takes exactly 2 arguments");
   }
-  Symbol var = std::any_cast<Symbol>(list[1]);
+  Symbol name = std::any_cast<Symbol>(list[1]);
   std::any val = eval(list[2], env);
-  // Assuming there's logic to actually 'set' the variable in 'env'
-  // For example: env.setVar(var, val);
+  
+  env.define(name, val);
+  return std::any();
 }
 
 inline void evalDefineExpr(const List& list, Environment& env) {
@@ -41,7 +49,15 @@ inline void evalDefineExpr(const List& list, Environment& env) {
 }
 
 inline std::any evalProcedureCall(const Symbol& symbol, const List& list, Environment& env) {
-  Expr proc = env.getExpr(symbol);
+  std::any val = env.get(symbol);
+
+  // It's a literal type -> return
+  if (val.type() != typeid(Expr)) 
+    return val;
+
+  // It's a function -> call
+  Expr proc = std::any_cast<Expr>(val);
+
   List args(list.begin() + 1, list.end());
   List evaluatedArgs;
 
@@ -50,11 +66,12 @@ inline std::any evalProcedureCall(const Symbol& symbol, const List& list, Enviro
   }
 
   return proc(evaluatedArgs);
+
 }
 
 inline std::any eval(const std::any& expr, Environment& env) {
   if (expr.type() == typeid(Symbol)) {
-    return env.getVar(std::any_cast<Symbol>(expr));
+    return env.get(std::any_cast<Symbol>(expr));
   }
   else if (expr.type() == typeid(Number)) {
     return expr;
@@ -67,7 +84,7 @@ inline std::any eval(const std::any& expr, Environment& env) {
 
     if (list[0].type() == typeid(Symbol)) {
       const Symbol& symbol = std::any_cast<Symbol>(list[0]);
-
+      
       if (symbol == "if") {
         return evalIfExpr(list, env);
       }
@@ -77,6 +94,9 @@ inline std::any eval(const std::any& expr, Environment& env) {
       else if (symbol == "define") {
         evalDefineExpr(list, env);
         return std::any(); // this will return nothing
+      }
+      else if (symbol == "quote") {
+        return evalQuote(list);
       }
       else {
         return evalProcedureCall(symbol, list, env);
