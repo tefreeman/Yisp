@@ -133,6 +133,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Procedure.cpp" />
     <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="Yisp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,10 @@
     <ClInclude Include="Scanner.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Yisp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests\add.yisp" />
+    <None Include="tests\test.yisp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

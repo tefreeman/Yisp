@@ -3,46 +3,99 @@
 #include "Types.h"
 #include "Parser.cpp"
 #include "Scanner.h"
+#include <fstream>
+#include "util.cpp"
+
 using namespace types;
 
 	void Yisp::RunFile(const std::string& path)
 	{
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+    if (!file.is_open()) {
+      throw std::runtime_error("Unable to open file.");
+    }
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+    if (file.read(buffer.data(), size)) {
+      std::string content(buffer.begin(), buffer.end());
+      std::cout << Run(content) << std::endl;
+    }
+    else {
+      throw std::runtime_error("Unable to read file.");
+    }
 	}
 
 	void Yisp::TestRunFile(const std::string& path)
 	{
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+    if (!file.is_open()) {
+      throw std::runtime_error("Unable to open file.");
+    }
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+    if (file.read(buffer.data(), size)) {
+      std::string content(buffer.begin(), buffer.end());
+
+      std::string expected = yisp_util::extractComment(content, ";expect:");
+      yisp_util::trim(expected);
+      std::string result = Run(content);
+
+      if (expected != result) {
+        std::cout << "Expected: " << expected << std::endl;
+        std::cout << "Got: " << result << std::endl;
+        std::cout << "Test failed." << std::endl;
+      }
+      else {
+        std::cout << "Test passed." << std::endl;
+      }
+    }
+    else {
+      throw std::runtime_error("Unable to read file.");
+    }
 	}
 
-	void Yisp::Run(const std::string& content)
+	std::string Yisp::Run(const std::string& content)
 	{
+
+    Scanner scanner;
+    Environment env;
+
+    try {
+     List tokens = scanner.parse(content);
+     std::any val = eval(tokens, env);
+     return stringifyOutput(val);
+    }
+    catch (YispRuntimeError& e) {
+      e.display();
+    }
 	}
 
 
-  std::string Yisp::schemestr(const std::any& exp) {
-    if (exp.type() == typeid(List)) {
-      const List& lst = std::any_cast<List>(exp);
+  std::string Yisp::stringifyOutput(const std::any& exp) {
+    if (isList(exp)) {
+      const List& lst = toList(exp);
       std::string result = "(";
       for (const auto& item : lst) {
         if (&item != &lst[0]) {
           result += " ";
         }
-        result += schemestr(item);
+        result += stringifyOutput(item);
       }
       result += ")";
       return result;
     }
     else {
-      if (exp.type() == typeid(bool)) {
-        bool val = std::any_cast<bool>(exp);
-        return val ? "T" : "()";
-      }
-      if (exp.type() == typeid(std::string)) {
-        return std::any_cast<std::string>(exp);
-      }
-      if (exp.type() == typeid(Number)) {
-        return std::to_string(std::any_cast<Number>(exp));
-      }
-
+      return atomToStr(exp);
     }
   }
 
@@ -56,16 +109,16 @@ using namespace types;
       std::getline(std::cin, input);
       if (input.empty()) continue; // Handle empty input
 
-   //   try {
+      try {
         List tokens = scanner.parse(input);
         std::any val = eval(tokens, env);
        
        if (val.has_value()) {
-          std::cout << schemestr(val) << std::endl;
+          std::cout << stringifyOutput(val) << std::endl;
         }
-   //   }
-    //  catch (const std::exception& e) {
-     //   std::cerr << "Error: " << e.what() << std::endl;
-    //  }
+    }
+      catch (YispRuntimeError& e) {
+        e.display();
+     }
     }
   }

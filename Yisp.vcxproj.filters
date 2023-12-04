@@ -31,7 +31,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Error.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,11 +53,15 @@
     <ClInclude Include="DefaultExpr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Parser.cpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Procedure.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests\add.yisp" />
+    <None Include="tests\test.yisp" />
   </ItemGroup>
 </Project>

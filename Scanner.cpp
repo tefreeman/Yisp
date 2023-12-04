@@ -5,11 +5,13 @@
 #include <any>
 #include <deque>
 #include "Types.h"
+#include "Util.cpp"
+
 
 using namespace types;
 
 
-std::any Scanner::flattenList(std::any& element) {
+std::any Scanner::_flattenList(std::any& element) {
   // If the element is a List, flatten it
   if (element.type() == typeid(List)) {
     return flattenSingleElementVectors(std::any_cast<List&>(element));
@@ -20,7 +22,7 @@ std::any Scanner::flattenList(std::any& element) {
 
 std::any Scanner::flattenSingleElementVectors(List& list) {
   for (auto& element : list) {
-    element = flattenList(element);
+    element = _flattenList(element);
   }
 
   // If the list has only one element, return that element
@@ -32,15 +34,7 @@ std::any Scanner::flattenSingleElementVectors(List& list) {
 }
 
 
-void replaceAll(std::string& str, const std::string& from, const std::string& to) {
-  size_t start_pos = 0;
-  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length(); // Handles case if 'to' is a substring of 'from'
-  }
-}
-
-void removeEmpty(std::deque<std::string>& tokens) {
+void Scanner::removeEmpty(std::deque<std::string>& tokens) {
   for (auto it = tokens.begin(); it != tokens.end();) {
     if (*it == "") {
       it = tokens.erase(it);
@@ -51,37 +45,18 @@ void removeEmpty(std::deque<std::string>& tokens) {
   }
 }
 
-bool isRealNumber(const std::string& str) {
-  std::istringstream iss(str);
-  double d;
-  char c;
-  return iss >> d && !(iss >> c);
-}
 
-bool isInteger(const std::string& str) {
-  std::istringstream iss(str);
-  int num;
-  char c;
-  if (!(iss >> num)) {
-    return false; // not an integer
-  }
-  if (iss >> c) {
-    return false; // additional characters after integer
-  }
-  return true; // is an integer
-}
 
 std::deque<std::string> Scanner::Tokenize(std::string& text)
 {
   // All characters to lowercase
 
-  for (int i = 0; i < text.length(); i++)
-    text[i] = tolower(text[i]);
+  text = yisp_util::removeComment(text, ";");
 
   std::deque<std::string> tokens;
 
-  replaceAll(text, "(", " ( ");
-  replaceAll(text, ")", " ) ");
+  yisp_util::strReplaceAll(text, "(", " ( ");
+  yisp_util::strReplaceAll(text, ")", " ) ");
 
   std::string token;
   std::istringstream tokenStream(text);
@@ -95,7 +70,8 @@ std::deque<std::string> Scanner::Tokenize(std::string& text)
 
   return tokens;
 }
-  List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
+
+List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
   List expressions;
   while (!tokens.empty()) {
     expressions.push_back(readFromTokens(tokens));
@@ -105,8 +81,9 @@ std::deque<std::string> Scanner::Tokenize(std::string& text)
 
 List Scanner::readFromTokens(std::deque<std::string>& tokens)
 {
+
   if (tokens.size() == 0) {
-    throw std::invalid_argument("Unexpected End of File");
+    throw YispRuntimeError("Unexpected End of File");
   }
 
   Symbol token = tokens.front();
@@ -122,14 +99,12 @@ List Scanner::readFromTokens(std::deque<std::string>& tokens)
     return list;
   }
   else if (token == ")") {
-    throw std::invalid_argument("Unexpected )");
+    throw YispRuntimeError("Unexpected )");
   }
   else {
     std::vector<std::any> result;
-   // if (isInteger(token)) {
-   //   result.push_back(std::stoi(token));
-   // }
-    if (isRealNumber(token)) {
+
+    if (yisp_util::isRealNumber(token)) {
       result.push_back(std::stod(token));
     }
     else {
@@ -140,16 +115,46 @@ List Scanner::readFromTokens(std::deque<std::string>& tokens)
  
 }
 
+void Scanner::checkForUnbalancedParentheses(std::deque<std::string>& tokens)
+{
+  int openParentheses = 0;
+  int closedParentheses = 0;
+
+  for (auto& token : tokens) {
+    if (token == "(") {
+      openParentheses++;
+    }
+    else if (token == ")") {
+      closedParentheses++;
+    }
+  }
+
+  if (openParentheses != closedParentheses) {
+    throw YispRuntimeError("Unbalanced parentheses");
+  }
+}
+
+void Scanner::checkStartsWithParentheses(std::deque<std::string>& tokens)
+{
+  if (tokens.front() != "(") {
+    throw YispRuntimeError("Expression must start with a parentheses");
+  }
+}
+
 List Scanner::parse(std::string text)
 {
   std::deque<std::string> tokens = Tokenize(text);
+
+  checkStartsWithParentheses(tokens);
+  checkForUnbalancedParentheses(tokens);
+
   List list = readMultipleExpressions(tokens);
   std::any flattendList = flattenSingleElementVectors(list);
 
   List returnedList;
 
 
-  for (auto& element : std::any_cast<std::vector<std::any>>(flattendList)) {
+  for (auto& element : toList(flattendList)) {
     returnedList.push_back(element);
   }
 

@@ -14,7 +14,7 @@ namespace expr {
     double result = std::any_cast<double>(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
-      result -= std::any_cast<double>(args[i]);
+      result += std::any_cast<double>(args[i]);
     }
     return result;
   }
@@ -221,11 +221,18 @@ namespace expr {
 
   const inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
     {"+",  Add},
+    {"add", Add}, 
     {"-",  Sub},
+    {"sub", Sub},
     {"*",  Mul},
+    {"mult", Mul},
     {"/",  Div},
+    {"div", Div},
     {">",  Gt},
+    {"gt", Gt},
     {"<",  Lt},
+    {"=",  Eq},
+    {"gt", Gt},
     {"<=", Lte},
     {">=", Gte},
     {"=",  Eq},

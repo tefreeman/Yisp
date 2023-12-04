@@ -13,36 +13,36 @@ class Procedure
     List body;
     Environment* env;
 
+
   public:
     Procedure(std::any& params_, std::any& body_, Environment* env_) {
-
-      if(params_.type() != typeid(List)) {
-        params = List(1, params_);
+      
+      if(!isList(params_)) {
+        this->params = List(1, params_);
       } else {
-        params = std::any_cast<List>(params_);
+        this->params = toList(params_);
       }
 
-      if (body_.type() != typeid(List)) {
-        body = List(1, body_);
+      if (!isList(body_)) {
+        this->body = List(1, body_);
       } else {
-        body = std::any_cast<List>(body_);
+        this->body = toList(body_);
       };
 
-     env = env_;
+     // Gives the ability to easily support set outside gobal scope
+     env = new Environment(env_);
     }
 
     std::any call(List args) {
-    if (params.size() != args.size()) {
-      throw std::runtime_error("Incorrect number of arguments passed to procedure");
-    }
-    Environment tempEnv = Environment(env);
+    throwBadArgCount("procedure.call", args, params.size());
 
+    // Prevents accidently modifying scope then calling procedure without correct params
+    Environment tempEnv(env);
     for (int i = 0; i < params.size(); i++) {
-      Symbol param = std::any_cast<Symbol>(params[i]);
-      tempEnv.define(param, args[i]);
+      Symbol param = toSymbol(params[i]);
+      env->define(param, args[i]);
     }
     return eval(body, tempEnv);
-    //~Procedure();
     }
 
 
