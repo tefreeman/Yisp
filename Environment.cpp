@@ -29,6 +29,26 @@ std::any Environment::get(Symbol name)
   throw "Undefined variable " + name;
 }
 
+bool Environment::isIn(Symbol name)
+{
+  if (defaultExprs.find(name) != defaultExprs.end())
+  {
+    return true;
+  }
+
+  else if (localVars.find(name) != localVars.end())
+  {
+    return true;
+  }
+
+  if (enclosing_ != nullptr)
+  {
+    return enclosing_->isIn(name);
+  }
+
+  return false;
+}
+
 void Environment::define(Symbol name, std::any value)
 {
   localVars[name] = value;

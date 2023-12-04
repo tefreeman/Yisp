@@ -129,13 +129,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Environment.cpp" />
+    <ClCompile Include="Error.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Procedure.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="Yisp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Commands.h" />
     <ClInclude Include="DefaultExpr.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="Parser.cpp" />

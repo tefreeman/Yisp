@@ -4,7 +4,6 @@
 
 using namespace types;
 
-inline Environment globalEnv;
 
 std::any eval(const std::any& expr, Environment& env);
 
@@ -12,6 +11,12 @@ inline bool isNil(const std::any& expr) {
   return expr.type() == typeid(List) && std::any_cast<List>(expr).empty();
 }
 
+inline std::any evalSymbol(const List& list, Environment& env) {
+  if (list[0].type() != typeid(Symbol)) return false;
+  Symbol symbol = std::any_cast<Symbol>(list[0]);
+
+  return env.isIn(symbol);
+}
 // Has to be moved out of DefaultExpr to not execute list
 inline std::any evalQuote(const List& list) {
   if (list.size() != 2) {
@@ -97,6 +102,9 @@ inline std::any eval(const std::any& expr, Environment& env) {
       }
       else if (symbol == "quote") {
         return evalQuote(list);
+      }
+      else if (symbol == "symbol?") {
+        return evalSymbol(list, env);
       }
       else {
         return evalProcedureCall(symbol, list, env);

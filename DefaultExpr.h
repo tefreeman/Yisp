@@ -2,20 +2,26 @@
 #include "Environment.h"
 #include <unordered_map>
 #include "Types.h"
+#include "Error.cpp"
+
+using namespace yisp_error;
 
 namespace expr {
+  
   std::any Add(List args)
   {
-    double result = 0;
-    for (auto arg : args)
+    throwIfArgsNotNumbers("-", args);
+    double result = std::any_cast<double>(args[0]);
+    for (int i = 1; i < args.size(); i++)
     {
-      result += std::any_cast<double>(arg);
+      result -= std::any_cast<double>(args[i]);
     }
     return result;
   }
-  
+
   std::any Sub(List args)
   {
+    throwIfArgsNotNumbers("-", args);
     double result = std::any_cast<double>(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
@@ -26,6 +32,7 @@ namespace expr {
 
   std::any Mul(List args)
   {
+    throwIfArgsNotNumbers("*", args);
     double result = 1;
     for (auto arg : args)
     {
@@ -36,6 +43,7 @@ namespace expr {
 
   std::any Div(List args)
   {
+    throwIfArgsNotNumbers("/", args);
     double result = std::any_cast<double>(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
@@ -46,6 +54,7 @@ namespace expr {
 
   std::any Gt(List args)
   {
+    throwIfArgsNotNumbers(">", args);
     double a = std::any_cast<double>(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
@@ -60,6 +69,7 @@ namespace expr {
   }
   std::any Gte(List args)
   {
+    throwIfArgsNotNumbers(">=", args);
     double a = std::any_cast<double>(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
@@ -75,6 +85,7 @@ namespace expr {
 
   std::any Lt(List args)
   {
+    throwIfArgsNotNumbers("<", args);
     double a = std::any_cast<double>(args[0]);
     double b;
     bool eval = true;
@@ -91,6 +102,7 @@ namespace expr {
 
   std::any Lte(List args)
   {
+    throwIfArgsNotNumbers("<=", args);
     double a = std::any_cast<double>(args[0]);
     double b;
     bool eval = true;
@@ -108,9 +120,8 @@ namespace expr {
 
   std::any Eq(List args)
   {
-    if (args.size() == 0 || args.size() > 2) {
-      throw "too many arguments given to EQ:";
-    }
+    throwIfArgsNotNumbers("= or ==", args);
+    throwBadArgCount("=", args, 2);
 
     if (args[0].type() != args[1].type())
       return false;
@@ -127,6 +138,7 @@ namespace expr {
 
   std::any Cons(List args)
   {
+
     if (args.size() != 2) {
       throw "too many arguments given to CONS:";
     }
@@ -138,6 +150,7 @@ namespace expr {
 
   std::any Car(List args)
   {
+    throwIfArgEmptyList("CAR", args);
     if (args.size() != 1) {
       throw "too many arguments given to CAR:";
     }
@@ -147,6 +160,7 @@ namespace expr {
 
   std::any Cdr(List args)
   {
+    throwIfArgEmptyList("CDR", args);
     if (args.size() != 1) {
       throw "too many arguments given to CDR:";
     }
@@ -155,47 +169,54 @@ namespace expr {
     return list;
   }
 
-  std::any isNumber(List args)
-  {
-    if (args.size() != 1) {
-      throw "too many arguments given to NUMBER?:";
-    }
-    return args[0].type() == typeid(Number);
-  }
-  std::any isSymbol(List args)
-  {
-    if (args.size() != 1) {
-      throw "too many arguments given to SYMBOL?:";
-    }
-    return args[0].type() == typeid(Symbol);
-  }
-  std::any isList(List args)
-  {
-    if (args.size() != 1) {
-      throw "too many arguments given to LIST?:";
-    }
-    return args[0].type() == typeid(List);
-  }
   std::any isNull(List args)
   {
-    if (args.size() != 1) {
-      throw "too many arguments given to NULL?:";
-    }
-    return args.size();
+    if (args.size() == 0)
+      return true;
+    return false;
+  }
+
+  std::any isNumber(List args)
+  {
+    throwBadArgCount("NUMBER?", args, 1);
+    return args[0].type() == typeid(Number);
+  }
+
+  std::any isList(List args)
+  {
+    return args[0].type() == typeid(List);
   }
 
   std::any isNullAnd(List args) {
-    if (args.size() > 2) {
-      throw "too many arguments given to NULL?:";
+    throwBadArgCount("NULL?:", args, 2);
+    if (args[0].type() != typeid(List) && args[1].type() != typeid(List)) {
+      return true;
     }
-    return args.size() == 2;
+    if (args[0].type() == typeid(List) && args[1].type() != typeid(List)) {
+      List arg0 = std::any_cast<List>(args[0]);
+      return !(std::any_cast<bool>(isNull(arg0)));
+    }
+    if (args[0].type() != typeid(List) && args[1].type() == typeid(List)) {
+          List arg1 = std::any_cast<List>(args[1]);
+          return !(std::any_cast<bool>(isNull(arg1)));
+    }
+
+    List arg0 = std::any_cast<List>(args[0]);
+    List arg1 = std::any_cast<List>(args[1]);
+
+    return !(std::any_cast<bool>(isNull(arg0))) && !(std::any_cast<bool>(isNull(arg1)));
   }
 
   std::any isNullOr(List args) {
-    if (args.size() > 2) {
-      throw "too many arguments given to NULL?:";
+    throwBadArgCount("NULL?:", args, 2);
+    if (args[0].type() != typeid(List) || args[1].type() != typeid(List)) {
+      return true;
     }
-    return args.size() >= 1;
+
+    List arg0 = std::any_cast<List>(args[0]);
+    List arg1 = std::any_cast<List>(args[1]);
+
+    return !(std::any_cast<bool>(isNull(arg0))) || !(std::any_cast<bool>(isNull(arg1)));
   }
 
   const inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
@@ -212,7 +233,9 @@ namespace expr {
     {"car", Car},
     {"cdr", Cdr},
     {"number?" , isNumber},
-    {"symbol?", isSymbol},
-    {"list?", isList}
+    {"list?", isList},
+    {"nil?", isNull},
+    {"and?", isNullAnd},
+    {"or?", isNullOr}
   };
 }
