@@ -7,10 +7,27 @@ using namespace types;
 using namespace yisp_error;
 
 // foward declaration
-Atom eval(const Atom& expr, Environment& env);
+Atom eval(Atom& expr, Environment& env);
 
-
-inline Atom evalSymbol(const List& list, Environment& env) {
+inline void evalLiteral(List& list) {
+  for(int i = 0; i < list.size(); i++) {
+    if (isSymbol(list[i])) {
+      Symbol symbol = toSymbol(list[i]);
+      if (symbol == "\'" || symbol == "quote") {
+        if (i + 1 >= list.size()) {
+                  throw YispRuntimeError("Quote or \' must be followed by an atom");
+        }
+        if (isList(list[i + 1])) {
+          List& nextAtom = toListRef(list[i + 1]);
+          nextAtom.setLiteral();
+        }
+        list.erase(list.begin() + i);
+      }
+    }
+  }
+  auto t = 1;
+}
+inline Atom evalSymbol(List& list, Environment& env) {
   throwBadArgCount("Symbol?", list, 2);
   if (!isSymbol(list[1])) return false;
   Symbol symbol = toSymbol(list[1]);
@@ -18,17 +35,29 @@ inline Atom evalSymbol(const List& list, Environment& env) {
   return env.isIn(symbol);
 }
 // Has to be moved out of DefaultExpr to not execute list
-inline Atom evalQuote(const List& list) {
-  throwBadArgCount("quote", list, 2);
-  return list[1]; // Return the quoted expression as is
+inline Atom evalQuote(List& list) {
+  return List(list.begin() + 1, list.end());
 }
-inline Atom evalIfExpr(const List& list, Environment& env) {
+inline Atom evalIfExpr(List& list, Environment& env) {
   throwBadArgCount("if", list, 4);
   Atom test = eval(list[1], env);
   return isNil(test) ? eval(list[3], env) : eval(list[2], env);
 }
 
-inline Atom evalSetExpr(const List& list, Environment& env) {
+inline Atom evalCondExpr(List& list, Environment& env) {
+
+  for (int i = 1; i < list.size(); i++) {
+    List cond = toListRef(list[i]);
+    Atom test = eval(cond[0], env);
+
+    if (!isNil(test)) {
+
+      return eval(cond[1], env);
+    }
+  }
+  throw YispRuntimeError("Undefined behavior no COND conditon was true");
+}
+inline Atom evalSetExpr(List& list, Environment& env) {
   throwBadArgCount("set", list, 3);
   if (env.isGlobal() == false) {
     throw YispRuntimeError("SET must be used only in global scope");
@@ -41,7 +70,7 @@ inline Atom evalSetExpr(const List& list, Environment& env) {
   return types::VOID; // this will return nothing (not nil)
 }
 
-inline std::any evalDefineExpr(const List& list, Environment& env) {
+inline std::any evalDefineExpr(List& list, Environment& env) {
   throwBadArgCount("define", list, 4);
   Symbol name = toSymbol(list[1]);
 
@@ -53,7 +82,7 @@ inline std::any evalDefineExpr(const List& list, Environment& env) {
   return types::VOID; // this will return nothing (not nil)
 }
 
-inline Atom evalProcedureCall(const Symbol& symbol, const List& list, Environment& env) {
+inline Atom evalProcedureCall(Symbol& symbol, List& list, Environment& env) {
   Atom val = env.get(symbol);
 
   // It's a literal type -> return
@@ -61,55 +90,69 @@ inline Atom evalProcedureCall(const Symbol& symbol, const List& list, Environmen
 
 
   // It's a function -> call
-  throwBadArgCount("DEFINE: " + symbol, list, 3);
 
   Expr proc = toExpr(val);
   List args(list.begin() + 1, list.end());
   List evaluatedArgs;
 
-  for (const auto& arg : args) {
-    evaluatedArgs.push_back(eval(arg, env));
+  // may want to add ' support later
+  for (auto& arg : args) {
+    Atom atom = eval(arg, env);
+    evaluatedArgs.push_back(atom);
   }
 
   return proc(evaluatedArgs);
 }
 
-inline Atom eval(const std::any& expr, Environment& env) {
-
+inline Atom eval(std::any& expr, Environment& env) {
+  if (isQuoteLiteral(expr)) {
+    Symbol symbol = toSymbol(expr);
+    return Symbol(symbol.begin() + 1, symbol.end());
+  }
   if (isLiteral(expr)) {
     return expr;
   }
-  else if (expr.type() == typeid(Symbol)) {
+  else if (isSymbol(expr)) {
     return env.get(toSymbol(expr));
   }
-  else if (expr.type() == typeid(List)) {
-    const List& list = toList(expr);
+  else if (isList(expr)) {
+    List& list = toListRef(expr);
+    
+    evalLiteral(list);
 
     if (list.empty()) return list;
 
-    if (list[0].type() == typeid(Symbol)) {
-      const Symbol symbol = toSymbol(list[0]);
+    if (isSymbol(list[0])) {
+      Symbol symbol = toSymbol(list[0]);
       
       if (symbol == "if") {
         return evalIfExpr(list, env);
+      }
+      else if (symbol == "cond") {
+        return evalCondExpr(list, env);
       }
       else if (symbol == "set") {
         return evalSetExpr(list, env);
       }
       else if (symbol == "define") {
         return evalDefineExpr(list, env);
-      }
-      else if (symbol == "quote" || symbol == "'") {
-        return evalQuote(list);
-      }
-      else if (symbol == "symbol?") {
+      } 
+      else if (symbol == "Symbol?") {
         return evalSymbol(list, env);
       }
       else {
         return evalProcedureCall(symbol, list, env);
       }
     }
+    else {
+      for (auto& atom : list) {
+        if (isLiteralList(atom))
+            return atom;
+        
+        return eval(atom, env);
+      }
+    }
   }
   std::string message = "Undefined evaluated expression, " + atomToStr(expr);
-  throw YispRuntimeError(message.c_str());
+  throw YispRuntimeError(message);
 }

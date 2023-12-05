@@ -10,7 +10,7 @@ class Procedure
 {
   private:
     List params;
-    List body;
+    std::any body;
     Environment* env;
 
 

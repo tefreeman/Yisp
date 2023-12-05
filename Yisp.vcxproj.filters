@@ -61,7 +61,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="tests\add.yisp" />
-    <None Include="tests\test.yisp" />
+    <None Include="tests\commandValidation.yisp" />
   </ItemGroup>
 </Project>

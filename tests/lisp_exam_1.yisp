@@ -1,0 +1,153 @@
+; Question 8
+
+
+(define countValue (val expr)
+  (cond
+    ((nil? expr) 0) ; expr is an empty list -> return 0
+    ((atom? expr)    ; (1) if expr is an atom
+         (if (= expr val)
+             1         ; if val == expr -> return 1
+             0))       ; else return 0
+    ((list? expr)    ; (2) if expr is a list
+         (+ (countValue val (car expr))    ; count occurrences in the head
+            (countValue val (cdr expr))))  ; and in the tail
+    (t 0)) ; Return 0 for other cases
+)    
+
+
+(countValue 0 '(5 () ((4)))) ;expect: 0
+(countValue 1 1) ;expect: 1
+(countValue 'a '('a ('a 1) 5 3 'b)) ;expect: 2
+(countValue 'z '(() () 'z () ('z 'z))) ;expect: 3
+
+
+; Question 9 -- polynomial solution using bsort
+
+
+(define MakePair (A B)
+   (cons A (cons B ()))
+ )
+ 
+(define Increment(val)
+	(+ val 1)
+)
+
+(define Len (L)
+  (if (nil? L) 0
+     (+ 1 (Len (cdr L)))
+  )
+)
+
+(define AppendList(L1 L2)
+  (if (nil? L1) 
+      L2
+      (cons (car L1) (AppendList (cdr L1) L2)))
+)
+
+; Create a binary tree and then use in order traversal -> sorted
+(define BinarySort (L)
+  (if (nil? L) ()
+     (traverse (BinaryTree L))
+))
+
+(define makeTree (A B C)
+       (cons A (cons B (cons C ())))
+)
+
+(define rightTree (Tree)
+(car (cdr (cdr Tree)))    
+)
+
+
+(define BinaryTree (L)
+  (if (= (Len L) 1) (AddLeaf (car L))
+        (BInsert (BinaryTree (cdr L)) (car L))
+  )
+)
+
+(define BInsert (Tree A)
+   (cond  ((nil? Tree) 
+               (AddLeaf A) )    
+          ((> (car Tree) A) 
+               (makeTree (car Tree) 
+                                (BInsert (car (cdr Tree)) A)
+                                (rightTree Tree))
+           )
+          ( t (makeTree (car Tree)
+                       (car (cdr Tree)) 
+                       (BInsert (rightTree Tree) A))     
+          )
+    )
+)
+
+(define AddLeaf (A)
+   (list A () ())
+)
+
+; Inorder Traversal (gives list in ascending order)
+(define traverse (List) 
+  (cond ( (nil? List) List)
+        ( t
+           (AppendList (traverse (car (cdr List)))
+                   (cons (car List)(traverse (car (cdr (cdr List))))))
+        )
+  )
+)
+
+
+; Create a list of ((val1 count1) (val2 count2) ... )
+; Use the list in FindMostCommon to output most common val and count
+(define NCount(list)
+  (cond 
+      ((nil? list) ())
+      (t (FindMostCommon (CountList (BinarySort list)) ()))
+   )
+)
+
+(define CountList(list)
+   (cond  
+	  ((nil? list) 
+			() )
+       (t    ; Start Recursive Count with first element and set count to 1
+			(RecursiveCountList (cdr list) () (car list) 1) 
+       )
+	)
+)
+
+; List must be sorted and of the form (1 1 1 2 4 5 5 5)
+(define RecursiveCountList(list rlist val count)
+   (cond
+       ((nil? (car list)) 
+			(cons (MakePair val count) rlist))
+			      ; Next element is same as current value -> increase count
+       ((= (car list) val)
+            (RecursiveCountList (cdr list) rlist val (Increment count)))
+       (t 
+			    ; Next element is different than current val
+			    ; append (val count) to rlist and set next call (val count) to next element
+			(RecursiveCountList (cdr list) (cons (MakePair val count) rlist) (car list) 1))
+    )
+)
+
+; list will be of the form ((val1 count1) (val2 count2) ...)
+; mostCommon is of the form (val count)
+; If tie returns the highest value
+
+(define FindMostCommon(list mostCommon)
+    (cond
+        ((nil? (car list))       ; Finished return MostCommon
+			mostCommon)
+        ((nil? mostCommon)       ; First Iter set mostCommon to 1st ele
+			(FindMostCommon (cdr list) (car list)))
+        ((> (car (cdr (car list))) (
+			car (cdr mostCommon))) 
+           (FindMostCommon (cdr list) (car list)))
+        (t (FindMostCommon (cdr list) mostCommon)
+     )     
+))
+
+(NCount '()) ;expect: ()
+(NCount '(1)) ;expect: (1 1)
+(NCount '(1 2 3 4 5)) ;expect: (5 1)
+(NCount '(5 4 3 2 1)) ;expect: (5 1)
+(NCount '(55 41 22 5 1 55 99 41 22 9 69 102 55 21)) ;expect: (55 3)

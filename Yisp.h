@@ -1,16 +1,23 @@
 #pragma once
 #include <string>
 #include <any>
+#include <vector>
+#include <iostream>
 
 class Yisp
 {
+private: 
+	bool RunTest(const std::string& content);
+	bool evalTestAndDisplay(std::string& output, std::string& expected);
 public:
-	bool debug_mode_ = false;
 	void RunFile(const std::string& path);
 	void TestRunFile(const std::string& path);
-	std::string Run(const std::string& content);
-
+	std::vector<std::string> Run(const std::string& content);
 	std::string stringifyOutput(const std::any& exp);
+
+
+
+
 	void repl();
 };
 

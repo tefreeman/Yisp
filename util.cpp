@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
+#include <algorithm>
 
 namespace yisp_util {
   // trim from start (in place)
@@ -36,59 +36,52 @@ namespace yisp_util {
   }
 
   inline std::string extractComment(const std::string& str, const std::string& commentType) {
-    bool inQuotes = false;
-    size_t length = str.length();
-    size_t commentTypeLength = commentType.length();
-
-    for (size_t i = 0; i < length; ++i) {
-      // Toggle inQuotes when a quote is found
-      if (str[i] == '\"') {
-        inQuotes = !inQuotes;
+    int commentStart = str.find(commentType);
+    if (commentStart != std::string::npos) {
+      int endOfLine = str.find('\n', commentStart);
+      if (endOfLine != std::string::npos) {
+        // Extract and return the comment, up to the newline character
+        return str.substr(commentStart + commentType.length(), endOfLine - commentStart - commentType.length());
       }
-
-      // Check for commentType outside of quotes
-      if (!inQuotes && i <= length - commentTypeLength) {
-        bool match = true;
-        for (size_t j = 0; j < commentTypeLength; ++j) {
-          if (str[i + j] != commentType[j]) {
-            match = false;
-            break;
-          }
-        }
-        if (match) {
-          return str.substr(i + commentTypeLength);
-        }
+      else {
+        // If no newline is found, extract and return the comment to the end of the string
+        return str.substr(commentStart + commentType.length());
       }
     }
+
     return ""; // Return empty string if no comment is found
   }
 
-#include <string>
+  inline std::string removeComments(std::string str, const std::string& commentType) {
+    size_t commentStart;
+    while ((commentStart = str.find(commentType)) != std::string::npos) {
+      size_t endOfLine = str.find('\n', commentStart);
+      if (endOfLine != std::string::npos) {
+        // Remove the comment, including the newline character
+        str.erase(commentStart, endOfLine - commentStart + 1);
+      }
+      else {
+        // If no newline is found, remove the comment to the end of the string
+        str.erase(commentStart, std::string::npos);
+        break; // No more comments after this point
+      }
+    }
+    return str;
+  }
 
   inline std::string removeComment(const std::string& str, const std::string& commentType) {
-    bool inQuotes = false;
-    size_t length = str.length();
-    size_t commentTypeLength = commentType.length();
+    size_t commentStart = str.find(commentType);
+    if (commentStart != std::string::npos) {
+      size_t endOfLine = str.find('\n', commentStart);
 
-    for (size_t i = 0; i < length; ++i) {
-      // Toggle inQuotes when a quote is found
-      if (str[i] == '\"') {
-        inQuotes = !inQuotes;
+      // If a newline is found after the comment start, return the string from the start up to the comment start
+      // and from the newline character to the end of the string
+      if (endOfLine != std::string::npos) {
+        return str.substr(0, commentStart) + str.substr(endOfLine);
       }
-
-      // Check for commentType outside of quotes
-      if (!inQuotes && i <= length - commentTypeLength) {
-        bool match = true;
-        for (size_t j = 0; j < commentTypeLength; ++j) {
-          if (str[i + j] != commentType[j]) {
-            match = false;
-            break;
-          }
-        }
-        if (match) {
-          // Return the string up to the start of the comment
-          return str.substr(0, i);
-        }
+      else {
+        // If no newline is found, return the string up to the start of the comment
+        return str.substr(0, commentStart);
       }
     }
 
@@ -97,6 +90,13 @@ namespace yisp_util {
   }
 
 
+
+ inline std::string strToLower(const std::string& input) {
+    std::string output = input;
+    std::transform(output.begin(), output.end(), output.begin(),
+      [](unsigned char c) { return std::tolower(c); });
+    return output;
+  }
 
 inline bool isRealNumber(const std::string& str) {
   std::istringstream iss(str);

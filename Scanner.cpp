@@ -6,7 +6,7 @@
 #include <deque>
 #include "Types.h"
 #include "Util.cpp"
-
+#include "Error.cpp"
 
 using namespace types;
 
@@ -45,41 +45,81 @@ void Scanner::removeEmpty(std::deque<std::string>& tokens) {
   }
 }
 
-
+#include <sstream>
+#include <deque>
+#include <string>
 
 std::deque<std::string> Scanner::Tokenize(std::string& text)
 {
   // All characters to lowercase
-
-  text = yisp_util::removeComment(text, ";");
-
-  std::deque<std::string> tokens;
+  text = yisp_util::removeComments(text, ";");
 
   yisp_util::strReplaceAll(text, "(", " ( ");
   yisp_util::strReplaceAll(text, ")", " ) ");
 
-  std::string token;
+  std::deque<std::string> tokens;
   std::istringstream tokenStream(text);
+  std::string token;
+  bool inString = false;
 
-
-  while (getline(tokenStream, token, ' ')) {
-    tokens.push_back(token);
+  while (tokenStream >> std::noskipws) {
+    char ch;
+    tokenStream >> ch;
+    if (ch == '\"') {
+      if (!inString) {
+        if (!token.empty()) {
+          tokens.push_back(token);
+          token.clear();
+        }
+        token += ch;
+      }
+      else {
+        token += ch;
+        tokens.push_back(token);
+        token.clear();
+      }
+      inString = !inString;
+    }
+    else if (std::isspace(ch) && !inString) {
+      if (!token.empty()) {
+        tokens.push_back(token);
+        token.clear();
+      }
+    }
+    else {
+      token += ch;
+    }
   }
 
-  removeEmpty(tokens);
+  if (!token.empty()) {
+    tokens.push_back(token);
+  }
 
   return tokens;
 }
 
+
+
+
 List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
   List expressions;
+  List tokenLine;
   while (!tokens.empty()) {
-    expressions.push_back(readFromTokens(tokens));
+    
+    tokenLine = toList(readFromTokens(tokens));  // Read a single expression ( ... )
+
+    if (!isList(tokenLine)) {
+       List list = List();
+       list.push_back(tokenLine);
+       expressions.push_back(list);
+       } else {
+    expressions.push_back(tokenLine);
+    }
   }
   return expressions;
 }
 
-List Scanner::readFromTokens(std::deque<std::string>& tokens)
+std::any Scanner::readFromTokens(std::deque<std::string>& tokens)
 {
 
   if (tokens.size() == 0) {
@@ -102,15 +142,13 @@ List Scanner::readFromTokens(std::deque<std::string>& tokens)
     throw YispRuntimeError("Unexpected )");
   }
   else {
-    std::vector<std::any> result;
 
     if (yisp_util::isRealNumber(token)) {
-      result.push_back(std::stod(token));
+      return std::stod(token);
     }
     else {
-      result.push_back(token);
+      return (token);
     }
-    return result;
   }
  
 }
@@ -148,17 +186,6 @@ List Scanner::parse(std::string text)
   checkStartsWithParentheses(tokens);
   checkForUnbalancedParentheses(tokens);
 
-  List list = readMultipleExpressions(tokens);
-  std::any flattendList = flattenSingleElementVectors(list);
+  return readMultipleExpressions(tokens);
 
-  List returnedList;
-
-
-  for (auto& element : toList(flattendList)) {
-    returnedList.push_back(element);
-  }
-
-  return returnedList;
 }
-
-
