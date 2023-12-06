@@ -7,16 +7,20 @@
 using namespace yisp_error;
 using namespace types;
 
-namespace expr {
+
+/* A Set of default Funcs that take a list of args and returns a vale
+ * These functions are reachable via basicOpMap
+ */
+namespace basic_ops {
   
   std::any Add(List& args)
   {
     throwBadArgsLt("+", args, 1);
     throwIfArgsNotNumbers("+", args);
-    double result = std::any_cast<double>(args[0]);
+    double result =toNumber(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
-      result += std::any_cast<double>(args[i]);
+      result +=  toNumber(args[i]);
     }
     return result;
   }
@@ -25,10 +29,10 @@ namespace expr {
   {
     throwBadArgsLt("-", args, 1);
     throwIfArgsNotNumbers("-", args);
-    double result = std::any_cast<double>(args[0]);
+    double result = toNumber(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
-      result -= std::any_cast<double>(args[i]);
+      result -=  toNumber(args[i]);
     }
     return result;
   }
@@ -38,9 +42,9 @@ namespace expr {
     throwBadArgsLt("*", args, 1);
     throwIfArgsNotNumbers("*", args);
     double result = 1;
-    for (auto arg : args)
+    for (int i = 1; i < args.size(); i++)
     {
-      result *= std::any_cast<double>(arg);
+      result *= toNumber(args[i]);
     }
     return result;
   }
@@ -49,10 +53,10 @@ namespace expr {
   {
     throwBadArgsLt("/", args, 1);
     throwIfArgsNotNumbers("/", args);
-    double result = std::any_cast<double>(args[0]);
+    double result = toNumber(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
-      result /= std::any_cast<double>(args[i]);
+      result /=  toNumber(args[i]);
     }
     return result;
   }
@@ -61,11 +65,11 @@ namespace expr {
   {
     throwBadArgsLt(">", args, 2);
     throwIfArgsNotNumbers(">", args);
-    double a = std::any_cast<double>(args[0]);
+    double a = toNumber(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
-      double b = std::any_cast<double>(args[i]);
+      double b =  toNumber(args[i]);
 
       if (!(a > b)) {
         return false;
@@ -77,11 +81,11 @@ namespace expr {
   {
     throwBadArgsLt(">=", args, 2);
     throwIfArgsNotNumbers(">=", args);
-    double a = std::any_cast<double>(args[0]);
+    double a = toNumber(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
-      double b = std::any_cast<double>(args[i]);
+      double b =  toNumber(args[i]);
 
       if (!(a >= b)) {
         return false;
@@ -94,11 +98,11 @@ namespace expr {
   {
     throwBadArgsLt("<", args, 2);
     throwIfArgsNotNumbers("<", args);
-    double a = std::any_cast<double>(args[0]);
+    double a = toNumber(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
-      double b = std::any_cast<double>(args[i]);
+      double b =  toNumber(args[i]);
 
       if (!(a < b)) {
         return false;
@@ -111,11 +115,11 @@ namespace expr {
   {
     throwBadArgsLt("<=", args, 2);
     throwIfArgsNotNumbers("<=", args);
-    double a = std::any_cast<double>(args[0]);
+    double a = toNumber(args[0]);
     bool eval = true;
     for (int i = 1; i < args.size(); i++)
     {
-      double b = std::any_cast<double>(args[i]);
+      double b =  toNumber(args[i]);
 
       if (!(a <= b)) {
         return false;
@@ -135,40 +139,35 @@ namespace expr {
       return (toNumber(args[0]) == toNumber(args[1]));
     else if (types::isLiteralStr(args[0]))
       return toSymbol(args[0]) == toSymbol(args[1]);
-    else if (types::isSymbol(args[0])) {
+    else if (types::isSymbol(args[0]))
         return toSymbol(args[0]) == toSymbol(args[1]);
-    }
     else if (types::isList(args[0])) {
       return toList(args[0]).size() == toList(args[1]).size();
    }
     else
-      throw "invalid type given to EQ:";
+      throw YispRuntimeError("invalid type given to EQ:");
   }
 
 
 
   std::any Cons(List args)
   {
-
-    if (args.size() != 2) {
-      throw "too many arguments given to CONS:";
-    }
+    throwBadArgCount("CONS", args, 2);
     // atomic senario 
     if (isList(args[1]))
     {
-      List args1List = std::any_cast<List>(args[1]);
+      List args1List = toList(args[1]);
       if (!args1List.isCons()) {
       args1List.push_front(args[0]);
       return args1List;
       }
     }
 
-    List list;
-    list.setAsConsCell(true);
-
-    list.push_back(args[0]);
-    list.push_back(args[1]);
-    return list;
+    List consCell;
+    consCell.setAsConsCell(true);
+    consCell.push_back(args[0]);
+    consCell.push_back(args[1]);
+    return consCell;
    
   }
 
@@ -176,34 +175,29 @@ namespace expr {
   std::any Car(List args)
   {
     throwIfArgEmptyList("CAR", args);
-    if (args.size() != 1) {
-      throw "too many arguments given to CAR:";
-    }
-    List arg0 = std::any_cast<List>(args[0]);
+    throwBadArgCount("CAR", args, 1);
+    List arg0 = toList(args[0]);
    
     return arg0[0];
   }
 
   std::any Cdr(List args)
   {
-    //throwIfArgEmptyList("CDR", args);
+    throwBadArgCount("CDR", args, 1);
    
-   if (args.size() != 1) {
-      throw "too many arguments given to CDR:";
-    }
     if(!isList(args[0]))
       return args[0];
 
-    List list = toList(args[0]);
+    List arg0 = toList(args[0]);
 
-    if (list.isCons()) {
-      return list[1];
-    }
-    if (list.empty()) return List();
-    list.erase(list.begin());
-    if (list.empty()) return List();
+    if (arg0.isCons()) return arg0[1];
+    if (arg0.empty()) return List();
 
-    return list;
+    arg0.erase(arg0.begin());
+
+    if (arg0.empty()) return List();
+
+    return arg0;
   }
 
   std::any isNil(List args)
@@ -243,7 +237,7 @@ namespace expr {
       return !types::isNil(arg0) && !types::isNil(arg1);
     }
     
-    throw YispRuntimeError("Interal parser failure");
+    throw YispRuntimeError("Interal parser failure at isNullAnd");
   }
 
   std::any isNullOr(List& args) {
@@ -282,7 +276,7 @@ namespace expr {
   std::any getTrue(List args) {
     return true;
   }
-  inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
+  inline std::unordered_map<std::string, Expr> basicOpMap = std::unordered_map<std::string, Expr>() = {
     {"+",  Add},
     {"add", Add}, 
     {"-",  Sub},

@@ -137,6 +137,7 @@
     <ClCompile Include="Yisp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Container.h" />
     <ClInclude Include="DefaultExpr.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="Parser.cpp" />

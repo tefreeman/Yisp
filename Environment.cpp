@@ -4,7 +4,7 @@
 #include "Procedure.h"
 #include "util.cpp"
 
-using namespace expr;
+using namespace basic_ops;
 
 
 
@@ -18,8 +18,8 @@ Expr Environment::getFunc(Symbol name)
 {
   std::string lowerName = yisp_util::strToLower(name);
   // default expressions are case insensitive
-  if (defaultExprs.find(lowerName) != defaultExprs.end())
-    return defaultExprs.at(lowerName);
+  if (basicOpMap.find(lowerName) != basicOpMap.end())
+    return basicOpMap.at(lowerName);
   else if (localFuncs.find(name) != localFuncs.end())
     return localFuncs.at(name);
   else if (enclosing_ != nullptr)    
@@ -53,7 +53,7 @@ bool Environment::hasFunc(Symbol name)
   std::string lowerName = yisp_util::strToLower(name);
 
   // default expressions are case insensitive
-  if (defaultExprs.find(lowerName) != defaultExprs.end())
+  if (basicOpMap.find(lowerName) != basicOpMap.end())
     return true;
   else if (localFuncs.find(name) != localFuncs.end())
     return true;

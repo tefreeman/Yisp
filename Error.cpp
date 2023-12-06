@@ -81,7 +81,7 @@ namespace yisp_error {
     if (args[0].type() != typeid(List)) {
       throw YispRuntimeError(name + " expects argument to be a list");
     }
-    if (std::any_cast<List>(args[0]).size() == 0) {
+    if (toList(args[0]).size() == 0) {
       throw YispRuntimeError(name + " expects argument to be a non-empty list");
     }
   }

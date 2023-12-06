@@ -5,118 +5,15 @@
 #include <vector>
 #include <functional>
 #include <iterator>
-
+#include "Container.h"
 
 namespace types {
-  template <typename T>
-  
-  class Vector {
-  private:
-    std::vector<T> vec; // Composition instead of inheritance
-    bool isConsCell;
-    bool isLiteralval;
-
-  public:
-    // Constructor
-    Vector() : isConsCell(false), isLiteralval(false) {}
-
-    template <typename InputIterator>
-    Vector(InputIterator first, InputIterator last)
-      : vec(first, last), isConsCell(false), isLiteralval(false) {}
-    
-    Vector(size_t size, const T& value)
-      : vec(size, value), isConsCell(false), isLiteralval(false) {}
-    
-    // Copy constructor
-    Vector(const Vector& other)
-      : vec(other.vec), isConsCell(other.isConsCell), isLiteralval(other.isLiteralval) {}
-
-    // Setter to mark as cons cell
-    void setAsConsCell(bool value) {
-      isConsCell = value;
-    }
-
-    void setLiteral() {
-      isLiteralval = true;
-    }
-
-    bool isLiteral() const {
-      return isLiteralval;
-    }
-
-    T& car() {
-      return vec.front();
-    }
-
-    T& cdr() {
-      return vec.back();
-    }
-    // Getter to check if it's a cons cell
-    bool isCons() const {
-      return isConsCell;
-    }
-    void push_front(const T& value) {
-      vec.insert(vec.begin(), value);
-    }
-    // Forwarding methods to the internal std::vector
-    void push_back(const T& value) {
-      vec.push_back(value);
-    }
-
-    T& operator[](size_t index) {
-      return vec[index];
-    }
-
-    const T& operator[](size_t index) const {
-      return vec[index];
-    }
-
-    bool empty() const {
-      return vec.empty();
-    }
-
-    int size() const {
-      return vec.size();
-    }
-    typename std::vector<T>::iterator begin() {
-      return vec.begin();
-    }
-
-    typename std::vector<T>::const_iterator begin() const {
-      return vec.begin();
-    }
-
-    typename std::vector<T>::iterator end() {
-      return vec.end();
-    }
-
-    typename std::vector<T>::const_iterator end() const {
-      return vec.end();
-    }
-    
-    typename std::vector<T>::iterator erase(typename std::vector<T>::iterator position) {
-      return vec.erase(position);
-    }
-
-    typename std::vector<T>::iterator erase(typename std::vector<T>::iterator first, typename std::vector<T>::iterator last) {
-      return vec.erase(first, last);
-    }
-
-    std::vector<T>& getVector() {
-      return vec;
-    }
-
-    const std::vector<T>& getVector() const {
-      return vec;
-    }
-  };
-
 
   typedef double Number;
   typedef std::string Symbol;
   typedef std::any Atom; // Number or Symbol or List
-  typedef Vector<std::any> List; // List of atoms
-  typedef std::function<std::any(Vector<std::any>&)> Expr; // Expression
+  typedef Container<std::any> List; // List of atoms
+  typedef std::function<std::any(Container<std::any>&)> Expr; // Expression
 
   // a hack to represent void check if std::any is empty;
   inline static const Atom VOID = std::any();
@@ -243,7 +140,7 @@ namespace types {
       bool val =  toBool(atom);
       return val ? "T" : "()";
     }
-    return "UNKNOWN";
+    throw YispRuntimeError("At atomToStr: Atom is not a number, symbol, or bool")
   }
 
   // Recursively searches for symbol

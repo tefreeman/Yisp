@@ -10,30 +10,6 @@
 
 using namespace types;
 
-
-std::any Scanner::_flattenList(std::any& element) {
-  // If the element is a List, flatten it
-  if (element.type() == typeid(List)) {
-    return flattenSingleElementVectors(std::any_cast<List&>(element));
-  }
-  // Otherwise, return the element as is
-  return element;
-}
-
-std::any Scanner::flattenSingleElementVectors(List& list) {
-  for (auto& element : list) {
-    element = _flattenList(element);
-  }
-
-  // If the list has only one element, return that element
-  if (list.size() == 1) {
-    return list[0];
-  }
-  // Otherwise, return the list
-  return list;
-}
-
-
 void Scanner::removeEmpty(std::deque<std::string>& tokens) {
   for (auto it = tokens.begin(); it != tokens.end();) {
     if (*it == "") {
@@ -45,9 +21,6 @@ void Scanner::removeEmpty(std::deque<std::string>& tokens) {
   }
 }
 
-#include <sstream>
-#include <deque>
-#include <string>
 
 std::deque<std::string> Scanner::Tokenize(std::string& text)
 {
