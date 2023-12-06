@@ -1,0 +1,41 @@
+; Testing number?
+(number? 5) ;expect: T
+(number? "abc") ;expect: ()
+(number? (cons 1 2)) ;expect: ()
+(number? ()) ;expect: ()
+
+; Testing symbol?
+(symbol? 'x) ;expect: T
+(symbol? 123) ;expect: ()
+(symbol? "string") ;expect: ()
+(symbol? ()) ;expect: ()
+
+; Testing list?
+(list? '(1 5))  ;expect: T
+(list? (cons 1 2)) ;expect: T
+(list? 'x) ;expect: ()
+(list? 10) ;expect: ()
+(list? ()) ;expect: T
+(list? '((1 2) (3 4))) ;expect: T
+(list? '(a (b) c)) ;expect: T
+(list? 5) ;expect: ()
+(list? "hello") ;expect: ()
+(list? '(1 "a" #t)) ;expect: T
+
+; Testing nil?
+(nil? ()) ;expect: T
+(nil? 0) ;expect: ()
+(nil? (cons 1 2)) ;expect: ()
+(nil? 'a) ;expect: ()
+
+; Testing and?
+(and? T T) ;expect: T
+(and? () T) ;expect: ()
+(and? T ()) ;expect: ()
+(and? () ()) ;expect: ()
+
+; Testing or?
+(or? T T) ;expect: T
+(or? () T) ;expect: T
+(or? T ()) ;expect: T
+(or? () ()) ;expect: ()

@@ -1,0 +1,28 @@
+; Setting and using a global variable
+(set x 10)
+(x) ;expect: 10
+
+; Change value of a variable
+(set x 20)
+(x) ;expect: 20
+
+; Set with an expression
+(set y (+ 5 5))
+(y) ;expect: 10
+
+
+; Define and call a simple function
+(define sum (a b) (+ a b))
+(sum 5 10) ;expect: 15
+
+; Define and call a function with nested expressions
+(define complex (x) (if (> x 5) (* x 2) (/ x 2)))
+(complex 4) ;expect: 2
+(complex 6) ;expect: 12
+
+; Function with no arguments
+(define getTen () 10)
+(getTen) ;expect: 10
+
+
+

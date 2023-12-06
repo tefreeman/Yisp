@@ -9,6 +9,16 @@ using namespace yisp_error;
 // foward declaration
 Atom eval(Atom& expr, Environment& env);
 
+inline void setRecursiveLiteral(List& list) {
+  for (int i = 0; i < list.size(); i++) {
+    if (isList(list[i])) {
+      List& nextAtom = toListRef(list[i]);
+      nextAtom.setLiteral();
+      setRecursiveLiteral(nextAtom);
+    }
+  }
+}
+
 inline void evalLiteral(List& list) {
   for(int i = 0; i < list.size(); i++) {
     if (isSymbol(list[i])) {
@@ -20,19 +30,20 @@ inline void evalLiteral(List& list) {
         if (isList(list[i + 1])) {
           List& nextAtom = toListRef(list[i + 1]);
           nextAtom.setLiteral();
+          setRecursiveLiteral(nextAtom);
+          list.erase(list.begin() + i);
         }
-        list.erase(list.begin() + i);
       }
     }
   }
-  auto t = 1;
 }
+
 inline Atom evalSymbol(List& list, Environment& env) {
   throwBadArgCount("Symbol?", list, 2);
   if (!isSymbol(list[1])) return false;
   Symbol symbol = toSymbol(list[1]);
 
-  return env.isIn(symbol);
+  return env.hasVar(symbol);
 }
 // Has to be moved out of DefaultExpr to not execute list
 inline Atom evalQuote(List& list) {
@@ -83,29 +94,28 @@ inline std::any evalDefineExpr(List& list, Environment& env) {
 }
 
 inline Atom evalProcedureCall(Symbol& symbol, List& list, Environment& env) {
-  Atom val = env.get(symbol);
-
-  // It's a literal type -> return
-  if (!isExpr(val)) return val;
-
-
-  // It's a function -> call
-
-  Expr proc = toExpr(val);
+  Expr proc = env.getFunc(symbol);
   List args(list.begin() + 1, list.end());
   List evaluatedArgs;
-
+ // std::cout << "evaluating procedure call: " << symbol << types::stringifyOutput(args) << std::endl;
   // may want to add ' support later
   for (auto& arg : args) {
     Atom atom = eval(arg, env);
+//   std::cout << "evaluating arg call: "  << types::stringifyOutput(atom) << std::endl;
+
     evaluatedArgs.push_back(atom);
   }
 
-  return proc(evaluatedArgs);
+  Atom res =  proc(evaluatedArgs);
+
+//  std::cout << "evaluating procedure call result: " << types::stringifyOutput(res) << std::endl;
+  
+
+  return res;
 }
 
 inline Atom eval(std::any& expr, Environment& env) {
-  if (isQuoteLiteral(expr)) {
+ if (isQuoteLiteral(expr)) {
     Symbol symbol = toSymbol(expr);
     return Symbol(symbol.begin() + 1, symbol.end());
   }
@@ -113,11 +123,12 @@ inline Atom eval(std::any& expr, Environment& env) {
     return expr;
   }
   else if (isSymbol(expr)) {
-    return env.get(toSymbol(expr));
+  Symbol symbol = toSymbol(expr);
+    return env.getVar(symbol);
   }
   else if (isList(expr)) {
-    List& list = toListRef(expr);
-    
+    List list = toList(expr);
+
     evalLiteral(list);
 
     if (list.empty()) return list;
@@ -141,15 +152,9 @@ inline Atom eval(std::any& expr, Environment& env) {
         return evalSymbol(list, env);
       }
       else {
+          if (env.hasVar(symbol)) 
+            return env.getVar(symbol);
         return evalProcedureCall(symbol, list, env);
-      }
-    }
-    else {
-      for (auto& atom : list) {
-        if (isLiteralList(atom))
-            return atom;
-        
-        return eval(atom, env);
       }
     }
   }

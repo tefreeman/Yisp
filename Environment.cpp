@@ -14,33 +14,51 @@ bool Environment::isGlobal()
   return enclosing_ == nullptr;
 }
 
-std::any Environment::get(Symbol name)
+Expr Environment::getFunc(Symbol name)
 {
   std::string lowerName = yisp_util::strToLower(name);
-
   // default expressions are case insensitive
   if (defaultExprs.find(lowerName) != defaultExprs.end())
     return defaultExprs.at(lowerName);
-  else if (localVars.find(name) != localVars.end())
-    return localVars.at(name);
+  else if (localFuncs.find(name) != localFuncs.end())
+    return localFuncs.at(name);
   else if (enclosing_ != nullptr)    
-    return enclosing_->get(name);
+    return enclosing_->getFunc(name);
 
 
   throw YispRuntimeError("Undefined variable " + name);
 }
 
-bool Environment::isIn(Symbol name)
+std::any &Environment::getVar(Symbol name)
+{
+  if (localVars.find(name) != localVars.end())
+    return localVars.at(name);
+  else if (enclosing_ != nullptr)
+    return enclosing_->getVar(name);
+}
+
+bool Environment::hasVar(Symbol name)
+{
+  // default expressions are case insensitive
+  if (localVars.find(name) != localVars.end())
+    return true;
+  else if (enclosing_ != nullptr)
+    return enclosing_->hasVar(name);
+
+  return false;
+}
+
+bool Environment::hasFunc(Symbol name)
 {
   std::string lowerName = yisp_util::strToLower(name);
 
   // default expressions are case insensitive
-  if (defaultExprs.find(name) != defaultExprs.end()) 
+  if (defaultExprs.find(lowerName) != defaultExprs.end())
     return true;
-  else if (localVars.find(name) != localVars.end())
+  else if (localFuncs.find(name) != localFuncs.end())
     return true;
   else if (enclosing_ != nullptr)
-    return enclosing_->isIn(name);
+    return enclosing_->hasFunc(name);
 
   return false;
 }
@@ -52,7 +70,7 @@ void Environment::define(Symbol name, std::any& value)
 
 void Environment::define( Symbol name, Expr& func)
 {
-  localVars[name] = func;
+  localFuncs[name] = func;
 }
 
 void Environment::defineProcedure(Symbol name, std::any args, std::any expr)

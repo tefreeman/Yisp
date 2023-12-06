@@ -179,23 +179,30 @@ namespace expr {
     if (args.size() != 1) {
       throw "too many arguments given to CAR:";
     }
-    List list = std::any_cast<List>(args[0]);
-    return list[0];
+    List arg0 = std::any_cast<List>(args[0]);
+   
+    return arg0[0];
   }
 
   std::any Cdr(List args)
   {
-    throwIfArgEmptyList("CDR", args);
-    if (args.size() != 1) {
+    //throwIfArgEmptyList("CDR", args);
+   
+   if (args.size() != 1) {
       throw "too many arguments given to CDR:";
     }
+    if(!isList(args[0]))
+      return args[0];
 
     List list = toList(args[0]);
-    list.erase(list.begin());
 
-    // TODO verify
-    if(list.isCons())
-      return list[0];
+    if (list.isCons()) {
+      return list[1];
+    }
+    if (list.empty()) return List();
+    list.erase(list.begin());
+    if (list.empty()) return List();
+
     return list;
   }
 
@@ -275,7 +282,7 @@ namespace expr {
   std::any getTrue(List args) {
     return true;
   }
-  const inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
+  inline std::unordered_map<std::string, Expr> defaultExprs = std::unordered_map<std::string, Expr>() = {
     {"+",  Add},
     {"add", Add}, 
     {"-",  Sub},

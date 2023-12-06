@@ -44,6 +44,13 @@ namespace types {
       return isLiteralval;
     }
 
+    T& car() {
+      return vec.front();
+    }
+
+    T& cdr() {
+      return vec.back();
+    }
     // Getter to check if it's a cons cell
     bool isCons() const {
       return isConsCell;
@@ -180,7 +187,7 @@ namespace types {
     if (atom.type() != typeid(Symbol)) return false;
 
     Symbol symbol = toSymbol(atom);
-    return !(isLiteralStr(symbol) || isNumber(symbol) || isLiteralList(symbol));
+    return !isLiteralStr(symbol) && !isNumber(symbol) && !isLiteralList(symbol);
   }
 
   inline bool isVoid(const Atom& atom) {
@@ -236,7 +243,7 @@ namespace types {
       bool val =  toBool(atom);
       return val ? "T" : "()";
     }
-
+    return "UNKNOWN";
   }
 
   // Recursively searches for symbol
@@ -256,6 +263,38 @@ namespace types {
     return false;
 
   }
+
+ inline  std::string stringifyOutput(std::any exp) {
+    if (isList(exp)) {
+      List lst = toList(exp);
+
+      // Check if the list is a cons cell
+      if (isConsCell(exp)) {
+        // Assuming a cons cell has exactly two elements
+        if (lst.size() == 2)
+          return "(" + stringifyOutput(lst[0]) + " . " + stringifyOutput(lst[1]) + ")";
+        else
+          return   "(" + stringifyOutput(lst[0]) + ")";
+      }
+      else {
+        // Handle as a regular list
+        std::string result = "(";
+        for (size_t i = 0; i < lst.size(); ++i) {
+          if (i > 0) {
+            result += " ";
+          }
+          result += stringifyOutput(lst[i]);
+        }
+        result += ")";
+        return result;
+      }
+    }
+    else {
+      // Handle non-list types
+      return atomToStr(exp);
+    }
+  }
+
 }
 
 

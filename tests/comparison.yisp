@@ -1,0 +1,60 @@
+; Equality
+(= 10 10) ;expect: T
+(= 5 10) ;expect: ()
+(= -1 -1) ;expect: T
+(= 0 0) ;expect: T
+(= "hello" "hello") ;expect: T
+(= "hello" "world") ;expect: ()
+
+; Less Than
+(< 5 10) ;expect: T
+(< 10 5) ;expect: ()
+(< 10 10) ;expect: ()
+(< -1 0) ;expect: T
+(< 0 -1) ;expect: ()
+
+(lt 5 10) ;expect: T
+(lt 10 5) ;expect: ()
+(lt 10 10) ;expect: ()
+(lt -1 0) ;expect: T
+(lt 0 -1) ;expect: ()
+
+; Greater Than
+(> 10 5) ;expect: T
+(> 5 10) ;expect: ()
+(> 10 10) ;expect: ()
+(> 0 -1) ;expect: T
+(> -1 0) ;expect: ()
+
+(gt 10 5) ;expect: T
+(gt 5 10) ;expect: ()
+(gt 10 10) ;expect: ()
+(gt 0 -1) ;expect: T
+(gt -1 0) ;expect: ()
+
+; Less Than or Equal To
+(<=  5 10) ;expect: T
+(<=  10 5) ;expect: ()
+(<=  10 10) ;expect: T
+(<=  -1 0) ;expect: T
+(<=  0 -1) ;expect: ()
+
+(lte 5 10) ;expect: T
+(lte 10 5) ;expect: ()
+(lte 10 10) ;expect: T
+(lte -1 0) ;expect: T
+(lte 0 -1) ;expect: ()
+
+
+; Greater Than or Equal To
+(>= 10 5) ;expect: T
+(>= 5 10) ;expect: ()
+(>= 10 10) ;expect: T
+(>= 0 -1) ;expect: T
+(>= -1 0) ;expect: ()
+
+(gte 10 5) ;expect: T
+(gte 5 10) ;expect: ()
+(gte 10 10) ;expect: T
+(gte 0 -1) ;expect: T
+(gte -1 0) ;expect: ()

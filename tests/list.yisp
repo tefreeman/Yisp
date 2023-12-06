@@ -1,0 +1,40 @@
+; Testing cons
+(cons 1 2) ;expect: (1 . 2)
+(cons "a" "b") ;expect: ("a" . "b")
+(cons (cons 1 2) 3) ;expect: ((1 . 2) . 3)
+(cons 1 (cons 2 3)) ;expect: (1 . (2 . 3))
+(cons () 2) ;expect: (() . 2)
+(cons 1 ()) ;expect: (1)
+
+; Testing car
+(car (cons 1 2)) ;expect: 1
+(car (cons "a" "b")) ;expect: "a"
+(car (cons (cons 1 2) 3)) ;expect: (1 . 2)
+(car (cons 1 (cons 2 3))) ;expect: 1
+(car (cons () 2)) ;expect: ()
+(car (cons 1 ())) ;expect: 1
+
+; Testing cdr
+(cdr (cons 1 2)) ;expect: 2
+(cdr (cons "a" "b")) ;expect: "b"
+(cdr (cons (cons 1 2) 3)) ;expect: 3
+(cdr (cons 1 (cons 2 3))) ;expect: (2 . 3)
+(cdr (cons () 2)) ;expect: 2
+(cdr (cons 1 ())) ;expect: ()
+
+; Testing nested cons
+(car (car (cons (cons 1 2) 3))) ;expect: 1
+(cdr (car (cons (cons 1 2) 3))) ;expect: 2
+(car (cdr (cons 1 (cons 2 3)))) ;expect: 2
+(cdr (cdr (cons 1 (cons 2 3)))) ;expect: 3
+
+; Testing with nil
+(cons () ()) ;expect: (())
+(car (cons () ())) ;expect: ()
+(cdr (cons () ())) ;expect: ()
+
+; Testing with complex nested structures
+(cons (cons 1 (cons 2 3)) (cons 4 5)) ;expect: ((1 . (2 . 3)) . (4 . 5))
+(car (cons (cons 1 (cons 2 3)) (cons 4 5))) ;expect: (1 . (2 . 3))
+(cdr (cons (cons 1 (cons 2 3)) (cons 4 5))) ;expect: (4 . 5)
+

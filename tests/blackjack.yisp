@@ -1,0 +1,66 @@
+(define busted?(val) 
+    (if (> val 21) t ())
+)
+
+ ; Calculates the card value only for Aces, 0 otherwise
+ ; If curHandVal+11 busts the hand only add 1 else 11
+
+(define aceVal(card curHandVal)
+     (cond 
+		((= card 1) 
+            ( if (busted?(+ curHandVal 11)) 
+                1
+                11
+            )
+        )
+        ((= 1 1) 0)
+    )
+ )
+; translates the card into its numeric value (Aces being 0)
+
+(define cardVal(card)
+    (cond ((= card 1) 0)
+        ((> card 10) 10)
+        (t card)
+    )
+ )
+
+;recursively calculates the value of the cards while assigning aces the value of 0
+
+(define handValueNoAces(cards val)
+    (if (nil? cards) val
+        (handValueNoAces (cdr cards) (+ val (cardVal (car cards))))
+    )
+)
+
+;recursively adds the aces to the total value of the hand.
+;The value returning is the final hand value.
+
+(define handValWithAces(cards handVal)
+    (if (nil? cards) handVal
+        (handValWithAces (cdr cards) (+ handVal (aceVal (car cards) handVal)))
+    )
+)
+
+; Calculates the hand total by calculating the non-ace Hand first by
+; assigning a value of 0 to aces. After calculating the non-ace hand total
+; a call to handValWithAces will add in the correct ace value if one exist
+; else it will return the hand value with no aces.
+
+(define scorehand(cards)
+      (handValWithAces cards (handValueNoAces cards 0))
+ )
+ 
+ ;; Test cases
+ 
+ ;; scorehand('(10,5,3,2)) = 20
+(scorehand '(10 5 3 2)) ;expect: 20
+ 
+ ;; scorehand('(1,10)) = 21
+(scorehand '(1 10)) ;expect: 21
+ 
+ ;; scorehand('(1,1,1,1,1)) = 15
+(scorehand '(1 1 1 1 1)) ;expect: 15
+ 
+ ;; scorehand('(10,8,8,1)) = 27
+(scorehand '(10 8 8 1)) ;expect: 27

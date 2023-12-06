@@ -1,0 +1,43 @@
+; Test basic true condition
+(if T 100 200) ;expect: 100
+
+; Test basic false condition
+(if () 100 200) ;expect: 200
+
+; Test with numbers as conditions (assuming all non () numbers are true)
+(if 1 300 400) ;expect: 300
+(if 0 400 500) ;expect: 400
+
+; Test with symbols as conditions (assuming all non () numbers are true)
+(if 'a 500 600) ;expect: 500
+(if '() 500 600) ;expect: 600
+
+; Test with nested if
+(if (if T T ()) 700 800) ;expect: 700
+(if (if () T ()) 700 800) ;expect: 800
+
+; Test with arithmetic expressions
+(if (> 5 2) 900 1000) ;expect: 900
+(if (< 5 2) 900 1000) ;expect: 1000
+
+; Test with list expressions -- return ( (T) ) and ( () )
+(if (car '(T ())) 1100 1200) ;expect: 1100
+(if (cdr '(T ())) 1200 1300) ;expect: 1200
+
+; Test with function calls
+(if (= 1 1) 1300 1400) ;expect: 1300
+(if (= 1 2) 1300 1400) ;expect: 1400
+
+; Test with complex nested expressions
+(if (and? T (or? () T)) 1500 1600) ;expect: 1500
+(if (and? () (or? T ())) 1500 1600) ;expect: 1600
+
+; Test with empty if (should evaluate to false)
+(if () 1700 1800) ;expect: 1800
+
+; Test with non-empty list as true condition
+(if '(1 2 3) 1900 2000) ;expect: 1900
+
+; Test with string literals (if your interpreter supports them)
+(if "true" 2100 2200) ;expect: 2100
+(if "" 2200 2300) ;expect: 2200

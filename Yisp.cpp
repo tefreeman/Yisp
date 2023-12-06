@@ -155,7 +155,10 @@ using namespace types;
       // Check if the list is a cons cell
       if (isConsCell(exp)) {
         // Assuming a cons cell has exactly two elements
-        return "(" + stringifyOutput(lst[0]) + " . " + stringifyOutput(lst[1]) + ")";
+        if(lst.size() == 2) 
+          return "(" + stringifyOutput(lst[0]) + " . " + stringifyOutput(lst[1]) + ")";
+        else
+          return   stringifyOutput(lst[0]);
       }
       else {
         // Handle as a regular list
