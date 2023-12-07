@@ -10,18 +10,19 @@ class Environment
 {
 private:
   std::unordered_map<std::string, std::any> localVars{{"t", true}, {"T", true}};
-  std::unordered_map<std::string, Expr> localFuncs;
+  std::unordered_map<std::string, Callable> localFuncs;
   Environment* enclosing_;
 
 public:
   bool isGlobal();
-  Expr getFunc(Symbol name); // variable % function lookup)
+  //
+  Callable getFunc(Symbol name); 
   std::any& getVar(Symbol name);
   bool hasVar(Symbol name);
   bool hasFunc(Symbol name);
 
   void define(Symbol name,  std::any& value);
-  void define(Symbol name,  Expr&);
+  void define(Symbol name,  Callable&);
   void defineProcedure(Symbol name, std::any args, std::any expr);
 
 

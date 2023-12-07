@@ -276,7 +276,7 @@ namespace basic_ops {
   std::any getTrue(List args) {
     return true;
   }
-  inline std::unordered_map<std::string, Expr> basicOpMap = std::unordered_map<std::string, Expr>() = {
+  inline std::unordered_map<std::string, Callable> basicOpMap = std::unordered_map<std::string, Callable>() = {
     {"+",  Add},
     {"add", Add}, 
     {"-",  Sub},

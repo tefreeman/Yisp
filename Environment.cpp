@@ -6,20 +6,19 @@
 
 using namespace basic_ops;
 
-
-
-
 bool Environment::isGlobal()
 {
   return enclosing_ == nullptr;
 }
 
-Expr Environment::getFunc(Symbol name)
+Callable Environment::getFunc(Symbol name)
 {
   std::string lowerName = yisp_util::strToLower(name);
   // default expressions are case insensitive
   if (basicOpMap.find(lowerName) != basicOpMap.end())
     return basicOpMap.at(lowerName);
+
+
   else if (localFuncs.find(name) != localFuncs.end())
     return localFuncs.at(name);
   else if (enclosing_ != nullptr)    
@@ -68,7 +67,7 @@ void Environment::define(Symbol name, std::any& value)
   localVars[name] = value;
 }
 
-void Environment::define( Symbol name, Expr& func)
+void Environment::define( Symbol name, Callable& func)
 {
   localFuncs[name] = func;
 }
@@ -76,7 +75,7 @@ void Environment::define( Symbol name, Expr& func)
 void Environment::defineProcedure(Symbol name, std::any args, std::any expr)
 {
   std::shared_ptr<Procedure> procedure = std::make_shared< Procedure>(Procedure(args, expr, this));
-  Expr boundFunction = std::bind(&Procedure::call, procedure, std::placeholders::_1);
+  Callable boundFunction = std::bind(&Procedure::call, procedure, std::placeholders::_1);
   define(name, boundFunction);
 }
 

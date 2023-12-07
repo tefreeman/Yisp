@@ -6,14 +6,23 @@
 
 namespace types {
 
+  // All numbers are double
   typedef double Number;
+  
+  // All symbols are strings
   typedef std::string Symbol;
-  typedef std::any Atom; // Number or Symbol or List
-  typedef Container<std::any> List; // List of atoms
-  typedef std::function<std::any(Container<std::any>&)> Expr; // Expression
+
+  // // Number or Symbol or List
+  typedef std::any sExpr;
+
+  // List of sExpr
+  typedef Container<std::any> List;
+
+  // Something that can be called (i.e) +, car, nil?, etc...
+  typedef std::function<std::any(Container<std::any>&)> Callable; // Expression
 
   // a hack to represent void check if std::any is empty;
-  inline static const Atom VOID = std::any();
+  inline static const sExpr VOID = std::any();
 
   inline bool _isEncasedInQuotes(const std::string& str) {
     // Check if the string is at least 2 characters long and starts and ends with a quote
@@ -26,32 +35,32 @@ namespace types {
     return false;
   }
 
-  inline Symbol toSymbol(const Atom& atom) {
+  inline Symbol toSymbol(const sExpr& atom) {
     return std::any_cast<Symbol>(atom);
   }
-  inline Number toNumber(const Atom& atom) {
+  inline Number toNumber(const sExpr& atom) {
     return std::any_cast<Number>(atom);
   }
 
-  inline bool toBool(const Atom& atom) {
+  inline bool toBool(const sExpr& atom) {
     return std::any_cast<bool>(atom);
   }
 
-  inline List& toListRef(Atom& atom) {
+  inline List& toListRef(sExpr& atom) {
     return std::any_cast<List&>(atom);
   }
 
-  inline List toList(const Atom& atom) {
+  inline List toList(const sExpr& atom) {
     return std::any_cast<List>(atom);
   }
 
-  inline Expr toExpr(const Atom& atom) {
-    return std::any_cast<Expr>(atom);
+  inline Callable toExpr(const sExpr& atom) {
+    return std::any_cast<Callable>(atom);
   }
-  inline bool isNumber(const Atom& atom) {
+  inline bool isNumber(const sExpr& atom) {
     return atom.type() == typeid(Number);
   }
-  inline bool isLiteralStr(const Atom atom) {
+  inline bool isLiteralStr(const sExpr atom) {
     if (atom.type() == typeid(Symbol)) {
       Symbol symbol = toSymbol(atom);
       return _isEncasedInQuotes(symbol);
@@ -59,37 +68,37 @@ namespace types {
     return false;
   }
 
-  inline bool isList(const Atom& atom) {
+  inline bool isList(const sExpr& atom) {
     return atom.type() == typeid(List);
   }
 
-  inline bool isLiteralList(const Atom& atom) {
+  inline bool isLiteralList(const sExpr& atom) {
     if (isList(atom)) {
       List list = toList(atom);
       return list.isLiteral();
     }
     return false;
   }
-  inline bool isLiteral(const Atom& exp) {
+  inline bool isLiteral(const sExpr& exp) {
     if (isNumber(exp)) return true;
     else if (isLiteralStr(exp)) return true;
     else if (isLiteralList(exp)) return true;
 
     return false;
   }
-  inline bool isSymbol(const Atom& atom) {
+  inline bool isSymbol(const sExpr& atom) {
     if (atom.type() != typeid(Symbol)) return false;
 
     Symbol symbol = toSymbol(atom);
     return !isLiteralStr(symbol) && !isNumber(symbol) && !isLiteralList(symbol);
   }
 
-  inline bool isVoid(const Atom& atom) {
+  inline bool isVoid(const sExpr& atom) {
     return atom.has_value() == false;
   }
 
 
-  inline bool isQuoteLiteral(const Atom& exp) {
+  inline bool isQuoteLiteral(const sExpr& exp) {
     if (isSymbol(exp)) {
       Symbol symbol = toSymbol(exp);
       return symbol[0] == '\'';
@@ -97,11 +106,11 @@ namespace types {
     return false;
   }
 
-  inline bool isBool(const Atom& atom) {
+  inline bool isBool(const sExpr& atom) {
     return atom.type() == typeid(bool);
   }
 
-  inline bool isNil(const Atom& expr) {
+  inline bool isNil(const sExpr& expr) {
     if (isList(expr)) {
       auto l = toList(expr);
       return toList(expr).empty();
@@ -111,11 +120,11 @@ namespace types {
     return false;
   }
 
-  inline bool isExpr(const Atom& atom) {
-    return atom.type() == typeid(Expr);
+  inline bool isExpr(const sExpr& atom) {
+    return atom.type() == typeid(Callable);
   }
 
-  inline bool isConsCell(const Atom& atom) {
+  inline bool isConsCell(const sExpr& atom) {
     if (isList(atom)) {
       List list = toList(atom);
       return list.isCons();
@@ -123,7 +132,7 @@ namespace types {
     return false;
   }
 
-  inline std::string atomToStr(const Atom& atom) {
+  inline std::string atomToStr(const sExpr& atom) {
     if (atom.has_value() == false) {
       return ""; // hack to represent void
     }
@@ -160,6 +169,7 @@ namespace types {
 
   }
 
+  //
   inline  std::string stringifyOutput(std::any exp) {
     if (isList(exp)) {
       List lst = toList(exp);

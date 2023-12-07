@@ -128,7 +128,6 @@ using namespace types;
     Environment env;
     std::vector<std::string> out;
 
-   // try {
      List tokens = scanner.parse(content);
 
      for (auto token : tokens)

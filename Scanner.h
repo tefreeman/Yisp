@@ -13,10 +13,11 @@ private:
   std::any readFromTokens(std::deque<std::string>& tokens);
 
   void checkForUnbalancedParentheses(std::deque<std::string>& tokens);
-  void checkStartsWithParentheses(std::deque<std::string>& tokens);
+  void checkStartsWithValidToken(std::deque<std::string>& tokens);
 
 
 public:
+  bool firstTokenIsQuote(std::deque<std::string>& tokens);
   List parse(std::string text);
 };
 

@@ -62,16 +62,23 @@ std::deque<std::string> Scanner::Tokenize(std::string& text)
 List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
   List expressions;
   List tokenLine;
-  while (!tokens.empty()) {
 
+  while (!tokens.empty()) {
+    
+    // removes the ' if its the first token 
+    bool doesStartWithQuote = firstTokenIsQuote(tokens);
     tokenLine = toList(readFromTokens(tokens));  // Read a single expression ( ... )
+      
+    // puts the ' back in
 
     if (!isList(tokenLine)) {
       List list = List();
       list.push_back(tokenLine);
+      if (doesStartWithQuote) list.push_front(std::string("\'"));
       expressions.push_back(list);
     }
     else {
+      if (doesStartWithQuote) tokenLine.push_front(std::string("\'"));
       expressions.push_back(tokenLine);
     }
   }
@@ -87,7 +94,6 @@ std::any Scanner::readFromTokens(std::deque<std::string>& tokens)
 
   Symbol token = tokens.front();
   tokens.pop_front();
-
   if (token == "(") {
     List list;
 
@@ -130,20 +136,27 @@ void Scanner::checkForUnbalancedParentheses(std::deque<std::string>& tokens)
   }
 }
 
-void Scanner::checkStartsWithParentheses(std::deque<std::string>& tokens)
+void Scanner::checkStartsWithValidToken(std::deque<std::string>& tokens)
 {
-  if (tokens.front() != "(") {
+  if (tokens.front() != "(" && tokens.front() != "\'") {
     throw YispRuntimeError("Expression must start with a parentheses");
   }
 }
 
+bool Scanner::firstTokenIsQuote(std::deque<std::string>& tokens) {
+  if (tokens.front() == "\'") {
+    tokens.pop_front();
+    return true;
+  }
+  return false;
+}
 List Scanner::parse(std::string text)
 {
   std::deque<std::string> tokens = Tokenize(text);
 
-  checkStartsWithParentheses(tokens);
-  checkForUnbalancedParentheses(tokens);
 
+  checkStartsWithValidToken(tokens);
+  checkForUnbalancedParentheses(tokens);
   return readMultipleExpressions(tokens);
 
 }
