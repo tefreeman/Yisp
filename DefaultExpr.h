@@ -1,8 +1,7 @@
 #pragma once
-#include "Environment.h"
 #include <unordered_map>
 #include "Types.h"
-#include "Error.cpp"
+#include "YispError.cpp"
 
 using namespace yisp_error;
 using namespace types;
@@ -41,7 +40,8 @@ namespace basic_ops {
   {
     throwBadArgsLt("*", args, 1);
     throwIfArgsNotNumbers("*", args);
-    double result = 1;
+
+    double result = toNumber(args[0]);
     for (int i = 1; i < args.size(); i++)
     {
       result *= toNumber(args[i]);

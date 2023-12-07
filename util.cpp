@@ -1,9 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <algorithm>
-
+#include <sstream>
 namespace yisp_util {
   // trim from start (in place)
   inline void ltrim(std::string& s) {
@@ -36,9 +35,9 @@ namespace yisp_util {
   }
 
   inline std::string extractComment(const std::string& str, const std::string& commentType) {
-    int commentStart = str.find(commentType);
+    size_t commentStart = str.find(commentType);
     if (commentStart != std::string::npos) {
-      int endOfLine = str.find('\n', commentStart);
+      size_t endOfLine = str.find('\n', commentStart);
       if (endOfLine != std::string::npos) {
         // Extract and return the comment, up to the newline character
         return str.substr(commentStart + commentType.length(), endOfLine - commentStart - commentType.length());

@@ -7,11 +7,13 @@
 #include <iterator>
 
 
-
+// Simple container class that wraps a std::vector
+// adds a flag to mark it as a cons cell
+// and adds a flag to mark it as a literal value
 template <typename T>
 class Container {
 private:
-  std::vector<T> vec; // Composition instead of inheritance
+  std::vector<T> vec; 
   bool isConsCell;
   bool isLiteralval;
 
@@ -74,7 +76,7 @@ public:
     return vec.empty();
   }
 
-  int size() const {
+  size_t size() const {
     return vec.size();
   }
   typename std::vector<T>::iterator begin() {

@@ -1,11 +1,8 @@
 #pragma once
-#include <string>
-#include <deque>
-#include <any>
-#include <vector>
-#include <functional>
-#include <iterator>
 #include "Container.h"
+#include <any>
+#include <functional>
+#include <string>
 
 namespace types {
 
@@ -56,8 +53,8 @@ namespace types {
   }
   inline bool isLiteralStr(const Atom atom) {
     if (atom.type() == typeid(Symbol)) {
-    Symbol symbol = toSymbol(atom);
-    return _isEncasedInQuotes(symbol);
+      Symbol symbol = toSymbol(atom);
+      return _isEncasedInQuotes(symbol);
     }
     return false;
   }
@@ -96,7 +93,7 @@ namespace types {
     if (isSymbol(exp)) {
       Symbol symbol = toSymbol(exp);
       return symbol[0] == '\'';
-      }
+    }
     return false;
   }
 
@@ -108,7 +105,7 @@ namespace types {
     if (isList(expr)) {
       auto l = toList(expr);
       return toList(expr).empty();
-      }
+    }
     else if (isBool(expr))
       return toBool(expr) == false;
     return false;
@@ -127,8 +124,8 @@ namespace types {
   }
 
   inline std::string atomToStr(const Atom& atom) {
-    if(atom.has_value() == false) {
-    return ""; // hack to represent void
+    if (atom.has_value() == false) {
+      return ""; // hack to represent void
     }
     if (atom.type() == typeid(Number)) {
       return std::to_string(int(toNumber(atom)));
@@ -137,10 +134,12 @@ namespace types {
       return std::string(toSymbol(atom));
     }
     else if (atom.type() == typeid(bool)) {
-      bool val =  toBool(atom);
+      bool val = toBool(atom);
       return val ? "T" : "()";
     }
-    throw YispRuntimeError("At atomToStr: Atom is not a number, symbol, or bool")
+    else {
+      return "unknown";
+    }
   }
 
   // Recursively searches for symbol
@@ -161,7 +160,7 @@ namespace types {
 
   }
 
- inline  std::string stringifyOutput(std::any exp) {
+  inline  std::string stringifyOutput(std::any exp) {
     if (isList(exp)) {
       List lst = toList(exp);
 

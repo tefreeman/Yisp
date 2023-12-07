@@ -1,7 +1,6 @@
 #pragma once
 #include "Environment.h"
 #include "Types.h"
-#include <stdexcept>
 #include "Parser.cpp"
 
 using namespace types;
@@ -28,8 +27,9 @@ class Procedure
     
     //std::cout << "PROCEDURE:  " << stringifyOutput(args) << std::endl;
 
+
+    // Add the arguments to the (called) environment
     Environment callEnv = Environment(&env);
-    // Prevents accidently modifying scope then calling procedure without correct params
     for (int i = 0; i < params.size(); i++) {
       Symbol param = toSymbol(params[i]);
       callEnv.define(param, args[i]);

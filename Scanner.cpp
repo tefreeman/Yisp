@@ -1,32 +1,19 @@
+#include "YispError.cpp"
 #include "Scanner.h"
+#include "Types.h"
+#include "Util.cpp"
+#include <any>
+#include <deque>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <any>
-#include <deque>
-#include "Types.h"
-#include "Util.cpp"
-#include "Error.cpp"
 
 using namespace types;
 
-void Scanner::removeEmpty(std::deque<std::string>& tokens) {
-  for (auto it = tokens.begin(); it != tokens.end();) {
-    if (*it == "") {
-      it = tokens.erase(it);
-    }
-    else {
-      ++it;
-    }
-  }
-}
-
-
 std::deque<std::string> Scanner::Tokenize(std::string& text)
 {
-  // All characters to lowercase
+  // Remove comments and replace parentheses with spaces
   text = yisp_util::removeComments(text, ";");
-
   yisp_util::strReplaceAll(text, "(", " ( ");
   yisp_util::strReplaceAll(text, ")", " ) ");
 
@@ -35,6 +22,7 @@ std::deque<std::string> Scanner::Tokenize(std::string& text)
   std::string token;
   bool inString = false;
 
+  // Tokenize the string
   while (tokenStream >> std::noskipws) {
     char ch;
     tokenStream >> ch;
@@ -71,22 +59,20 @@ std::deque<std::string> Scanner::Tokenize(std::string& text)
   return tokens;
 }
 
-
-
-
 List Scanner::readMultipleExpressions(std::deque<std::string>& tokens) {
   List expressions;
   List tokenLine;
   while (!tokens.empty()) {
-    
+
     tokenLine = toList(readFromTokens(tokens));  // Read a single expression ( ... )
 
     if (!isList(tokenLine)) {
-       List list = List();
-       list.push_back(tokenLine);
-       expressions.push_back(list);
-       } else {
-    expressions.push_back(tokenLine);
+      List list = List();
+      list.push_back(tokenLine);
+      expressions.push_back(list);
+    }
+    else {
+      expressions.push_back(tokenLine);
     }
   }
   return expressions;
@@ -104,7 +90,7 @@ std::any Scanner::readFromTokens(std::deque<std::string>& tokens)
 
   if (token == "(") {
     List list;
-    
+
     while (tokens.front() != ")") {
       list.push_back(readFromTokens(tokens));
     }
@@ -123,9 +109,8 @@ std::any Scanner::readFromTokens(std::deque<std::string>& tokens)
       return (token);
     }
   }
- 
-}
 
+}
 void Scanner::checkForUnbalancedParentheses(std::deque<std::string>& tokens)
 {
   int openParentheses = 0;

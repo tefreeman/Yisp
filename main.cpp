@@ -1,15 +1,8 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <cstdlib>
-#include <stdexcept>
 #include <filesystem>
-
-#include <vector>
-#include <any>
-
+#include <iostream>
+#include <string>
 #include "Yisp.h"
+
 int main(int argc, char* argv[]) {
 
 
@@ -19,7 +12,8 @@ int main(int argc, char* argv[]) {
   }
   else if (argc == 2) {
     if (strcmp(argv[1], "-test") == 0) {
-      // do test
+
+      // Run all tests in tests folder recursively
       std::filesystem::path cwd = std::filesystem::current_path();
       std::string path = cwd.string() + "/tests";
       std::filesystem::recursive_directory_iterator it(path);
@@ -33,10 +27,12 @@ int main(int argc, char* argv[]) {
       }
     }
     else {
+      // Run a single test file by name (in test folder) or path
       std::filesystem::path cwd = std::filesystem::current_path();
       std::string path = cwd.string() + "/tests";
       std::filesystem::recursive_directory_iterator it(path);
       Yisp yisp;
+
       // If it's a file name in tests folder
       for (auto& p : it) {
         if (p.path().extension() == ".yisp" && p.path().filename().string() == argv[1]) {
@@ -51,9 +47,11 @@ int main(int argc, char* argv[]) {
     }
   }
   else {
+
+    // Run REPL if no arguments
     Yisp yisp;
     yisp.repl();
   }
 
   return 0;
-} 
+}

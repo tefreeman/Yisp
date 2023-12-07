@@ -4,6 +4,7 @@
 #include "Parser.cpp"
 #include "Scanner.h"
 #include <fstream>
+#include <sstream>
 #include "util.cpp"
 
 using namespace types;
@@ -190,16 +191,17 @@ using namespace types;
       std::getline(std::cin, input);
       if (input.empty()) continue; // Handle empty input
 
-    //  try {
+    
+    try {
         List tokens = scanner.parse(input);
         std::any val = eval(tokens[0], env);
        
        if (val.has_value()) {
           std::cout << stringifyOutput(val) << std::endl;
         }
-//    }
- //     catch (YispRuntimeError& e) {
-  //      e.display();
-  //   }
+    }
+      catch (YispRuntimeError& e) {
+        e.display();
+     }
     }
   }

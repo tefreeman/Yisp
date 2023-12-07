@@ -129,9 +129,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Environment.cpp" />
-    <ClCompile Include="Error.cpp" />
+    <ClCompile Include="YispError.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Procedure.cpp" />
     <ClCompile Include="Scanner.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="Yisp.cpp" />
