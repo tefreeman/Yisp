@@ -46,17 +46,18 @@ Yisp supports a range of standard Lisp functions, including arithmetic, list man
   - `define` (define name (arg1 .. argN) expr)
   -  `set` (set name exp) 
 ## Usage
+- A pre-built Yisp.exe is provided in the main directory.
 - **Script Mode**: Run Lisp scripts by passing the file path as an argument.
 - **Interactive Mode**: Start the REPL by running Yisp without arguments.
 - **Testing Mode**: Run a series of predefined tests with `Yisp -test`.
   - The tests folder (not the individual test folders) must be in the same directory as the exe file.
      - Example:  Yisp folder -> Yisp.exe, /tests/ folder
   -  You can add tests by dropping them in the test folder or specifying the file path an argument.
-## Building
 
+## Building
 - Built with MSVC (Microsoft c++/c compiler) with the C++17 Standard
 - Download the repo above
 - To build download and install Microsoft Visual Studio https://visualstudio.microsoft.com/ for windows or mac. Then open up the project by opening .sln file. The project and all settings should load.  At the very top of the visual studio ide click the build tab and then build solution. The Yisp.exe file should be locaed in the Yisp/x64/Debug/ folder.
 
-- 
+
 Yisp offers a straightforward approach to Lisp interpretation, suitable for educational purposes or simple scripting tasks.
