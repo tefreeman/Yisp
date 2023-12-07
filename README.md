@@ -50,7 +50,8 @@ Yisp supports a range of standard Lisp functions, including arithmetic, list man
 - **Interactive Mode**: Start the REPL by running Yisp without arguments.
 - **Testing Mode**: Run a series of predefined tests with `Yisp -test`.
   - The tests folder (not the individual test folders) must be in the same directory as the exe file.
-  -  Example:  Yisp folder -> Yisp.exe, /tests/ folder
+     - Example:  Yisp folder -> Yisp.exe, /tests/ folder
+  -  You can add tests by dropping them in the test folder or specifying the file path an argument.
 ## Building
 
 - Built with MSVC (Microsoft c++/c compiler) with the C++17 Standard
