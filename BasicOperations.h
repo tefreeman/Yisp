@@ -7,7 +7,7 @@ using namespace yisp_error;
 using namespace types;
 
 
-/* A Set of default Funcs that take a list of args and returns a vale
+/* A Set of default Funcs that take a list of args and returns a value
  * These functions are reachable via basicOpMap
  */
 namespace basic_ops {
@@ -252,7 +252,7 @@ namespace basic_ops {
       List arg1 = toList(args[1]);
       return !(types::isNil(arg0) && types::isNil(arg1));
     }
-
+    return true;
   }
 
   std::any isListExpr(List& args) {

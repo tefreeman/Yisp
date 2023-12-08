@@ -127,6 +127,28 @@ inline void strReplaceAll(std::string& str, const std::string& from, const std::
 }
 }
 
+namespace github_color {
+  template < class CharT, class Traits >
+  constexpr
+    std::basic_ostream< CharT, Traits >& reset(std::basic_ostream< CharT, Traits >& os)
+  {
+    return os << "**";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+    std::basic_ostream< CharT, Traits >& foreground_red(std::basic_ostream< CharT, Traits >& os)
+  {
+    return os << "**";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+    std::basic_ostream< CharT, Traits >& foreground_green(std::basic_ostream< CharT, Traits >& os)
+  {
+    return os << "";
+  }
+}
 namespace ansi {
   template < class CharT, class Traits >
   constexpr

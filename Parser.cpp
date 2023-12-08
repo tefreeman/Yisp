@@ -1,12 +1,13 @@
 #include "Environment.h"  // Assuming Environment and other necessary types are defined in this or other headers
 #include "YispError.cpp"
 #include <any>
-
+#include "util.cpp"
 using namespace types;
 using namespace yisp_error;
 
 // foward declaration
-sExpr eval(sExpr& expr, Environment& env);
+sExpr eval(std::any& expr, Environment& env);
+
 
 
 inline void ifLiteralListMark(List& list) {
@@ -20,7 +21,6 @@ inline void ifLiteralListMark(List& list) {
         if (isList(list[i + 1])) {
           List& nextAtom = toListRef(list[i + 1]);
           nextAtom.setLiteral();
-          //setRecursiveLiteral(nextAtom);
           list.erase(list.begin() + i);
         }
       }
@@ -30,15 +30,9 @@ inline void ifLiteralListMark(List& list) {
 
 inline sExpr evalSymbol(List& list, Environment& env) {
   throwBadArgCount("Symbol?", list, 2);
-  if (!isSymbol(list[1])) return false;
-  Symbol symbol = toSymbol(list[1]);
+  return isSymbol(list[1]);
+}
 
-  return env.hasVar(symbol);
-}
-// Has to be moved out of DefaultExpr to not execute list
-inline sExpr evalQuote(List& list) {
-  return List(list.begin() + 1, list.end());
-}
 inline sExpr evalIfExpr(List& list, Environment& env) {
   throwBadArgCount("if", list, 4);
   sExpr test = eval(list[1], env);
@@ -66,6 +60,9 @@ inline sExpr evalSetExpr(List& list, Environment& env) {
 
   Symbol name = toSymbol(list[1]);
   sExpr val = eval(list[2], env);
+
+  if(env.hasFunc(name))
+    throw YispRuntimeError("SET cannot be used to override an already defined function");
 
   env.define(name, val);
   return types::VOID; // this will return nothing (not nil)
@@ -119,22 +116,24 @@ inline sExpr evalList(List& list, Environment& env) {
   if (isSymbol(list[0]))
    {
   Symbol head = toSymbol(list[0]);
-    if (head == "quote" || head == "'")
+  Symbol headLowerCase = yisp_util::strToLower(head);
+
+    if (headLowerCase == "quote" || headLowerCase == "'")
       return evalQuote(list, env);
 
-    if (head == "if") {
+    if (headLowerCase == "if") {
       return evalIfExpr(list, env);
     }
-    if (head == "cond") {
+    if (headLowerCase == "cond") {
       return evalCondExpr(list, env);
     }
-    if (head == "set") {
+    if (headLowerCase == "set") {
       return evalSetExpr(list, env);
     }
-    if (head == "define") {
+    if (headLowerCase == "define") {
       return evalDefineExpr(list, env);
     }
-    if (head == "Symbol?") {
+    if (headLowerCase == "symbol?") {
       return evalSymbol(list, env);
     }
     if (env.hasFunc(head))
@@ -142,11 +141,11 @@ inline sExpr evalList(List& list, Environment& env) {
     if (env.hasVar(head))
       return env.getVar(head);
 
-    throw std::runtime_error(head + " is not a function name; try using a symbol instead");
+    throw YispRuntimeError(head + " is not a function/variable name; try using a symbol instead");
   }
 
 
-  throw std::runtime_error("Should be unreachable");
+  throw YispRuntimeError("Internal interpreter error at EvalList -- code should be unreachable");
 
 }
 
@@ -160,6 +159,10 @@ inline sExpr eval(std::any& expr, Environment& env) {
   }
   if (isSymbol(expr)) {
     Symbol symbol = toSymbol(expr);
+
+    if (env.hasVar(symbol) == false)
+      throw YispRuntimeError("Undefined symbol: " + symbol);
+
     return env.getVar(symbol);
   }
   if (isList(expr)) {
@@ -167,7 +170,7 @@ inline sExpr eval(std::any& expr, Environment& env) {
     return evalList(list, env);
   }
 
-  throw std::runtime_error("Unknown expression type");
+  throw YispRuntimeError("Unknown expression type");
 }
 
 

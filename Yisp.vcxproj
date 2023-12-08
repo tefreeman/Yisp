@@ -137,7 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Container.h" />
-    <ClInclude Include="DefaultExpr.h" />
+    <ClInclude Include="BasicOperations.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="Parser.cpp" />
     <ClInclude Include="Procedure.h" />

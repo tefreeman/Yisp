@@ -35,7 +35,7 @@ using namespace types;
     }
 	}
 
-	void Yisp::TestRunFile(const std::string& path)
+	void Yisp::TestFile(const std::string& path)
 	{
     std::ifstream file(path, std::ios::binary | std::ios::ate);
 
@@ -65,27 +65,30 @@ using namespace types;
     std::vector<std::string> expectedOutputs;
     std::istringstream iss(content);
     std::string line;
-
     while (std::getline(iss, line)) {
 
+      
+      // grab the expected test output
       std::string expected = yisp_util::extractComment(line, ";expect:");
-      yisp_util::trim(expected);
+      yisp_util::trim(expected); // get rid of extra whitespace
 
       if (!expected.empty())
          expectedOutputs.push_back(expected);
     }
-     
-    std::vector<std::string> result = Run(content);
+    
+    // Interpret the file and get all outputs
+    std::vector<std::string> outputs = Run(content);
 
-    if (result.size() != expectedOutputs.size()) {
+    if (outputs.size() != expectedOutputs.size()) {
           std::cout << ansi::foreground_red;
-          std::cout << "Expected " << expectedOutputs.size() << " results, got " << result.size() << std::endl;
+          std::cout << "Expected " << expectedOutputs.size() << " results, got " << outputs.size() << std::endl;
           std::cout << ansi::reset;
           return false;
     }
-
+    int lineNumber = 0;
     for(int i=0; i < expectedOutputs.size(); i++) {
-      if (evalTestAndDisplay(expectedOutputs[i], result[i]) == false)
+      lineNumber++;
+      if (evalTestAndDisplay(expectedOutputs[i], outputs[i], lineNumber) == false)
         successfulTest = false;
       
     }
@@ -93,7 +96,7 @@ using namespace types;
     return successfulTest;
   }
 
-  bool Yisp::evalTestAndDisplay(std::string& expected, std::string& result)
+  bool Yisp::evalTestAndDisplay(std::string& expected, std::string& result, int lineNum)
   {
     bool testIsSuccess;
 
@@ -102,24 +105,29 @@ using namespace types;
     else if(expected.find("Error") != std::string::npos && result.find("Error") != std::string::npos)
       testIsSuccess = true;
     else
-      testIsSuccess = expected == result;
-
+      testIsSuccess = (expected == result);
+    
+    std::cout << "- ";
     if (testIsSuccess) {
       std::cout << ansi::foreground_green;
+      std::cout << "[ line " << lineNum << "] ";
       std::cout << "Expected: " << expected;
-      std::cout << "  Got: " << result;
+      std::cout << "  Console out: " << result;
       std::cout << ansi::reset;
 
     }
     else {
+
       std::cout << ansi::foreground_red;
+      std::cout << "[ line " << lineNum << "] ";
       std::cout << "Expected: " << expected;
-      std::cout << "  Got: " << result;
+      std::cout << "  Console out: " << result;
       std::cout << ansi::reset;
     }
     std::cout << std::endl;
     return testIsSuccess;
   }
+
 
 	std::vector<std::string> Yisp::Run(const std::string& content)
 	{

@@ -6,6 +6,7 @@
 
 ; Testing symbol?
 (symbol? 'x) ;expect: T
+(symbol? symbol?) ;expect: T
 (symbol? 123) ;expect: ()
 (symbol? "string") ;expect: ()
 (symbol? ()) ;expect: ()

@@ -8,10 +8,12 @@ class Yisp
 {
 private: 
 	bool RunTest(const std::string& content);
-	bool evalTestAndDisplay(std::string& output, std::string& expected);
+	bool evalTestAndDisplay(std::string& output, std::string& expected, int lineNum);
+
+
 public:
 	void RunFile(const std::string& path);
-	void TestRunFile(const std::string& path);
+	void TestFile(const std::string& path);
 	std::vector<std::string> Run(const std::string& content);
 	std::string stringifyOutput(const std::any& exp);
 

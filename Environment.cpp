@@ -1,6 +1,6 @@
 #include "Environment.h"
 #include <unordered_map>
-#include "DefaultExpr.h"
+#include "BasicOperations.h"
 #include "Procedure.h"
 #include "util.cpp"
 
@@ -25,7 +25,7 @@ Callable Environment::getFunc(Symbol name)
     return enclosing_->getFunc(name);
 
 
-  throw YispRuntimeError("Undefined variable " + name);
+  throw YispRuntimeError("Undefined function " + name);
 }
 
 std::any &Environment::getVar(Symbol name)
@@ -34,6 +34,8 @@ std::any &Environment::getVar(Symbol name)
     return localVars.at(name);
   else if (enclosing_ != nullptr)
     return enclosing_->getVar(name);
+
+  throw YispRuntimeError("Undefined variable " + name);
 }
 
 bool Environment::hasVar(Symbol name)

@@ -1,10 +1,10 @@
 #pragma once
-#include <vector>
-#include <string>
-#include <deque>
 #include <any>
+#include <deque>
 #include <functional>
 #include <iterator>
+#include <string>
+#include <vector>
 
 
 // Simple container class that wraps a std::vector
@@ -13,7 +13,7 @@
 template <typename T>
 class Container {
 private:
-  std::vector<T> vec; 
+  std::vector<T> vec;
   bool isConsCell;
   bool isLiteralval;
 
